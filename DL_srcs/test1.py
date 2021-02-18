@@ -1,16 +1,16 @@
-import cv2, dlib
+import cv2, dlib, imutils
 import numpy as np
 from imutils import face_utils
 # from keras.models import load_model
 import tensorflow as tf
 import time
 
-IMG_SIZE = (34, 26)
+IMG_SIZE = (34, 26)     # 입력 이미지 크기
 
 detector = dlib.get_frontal_face_detector()
 predictor = dlib.shape_predictor('shape_predictor_68_face_landmarks.dat')
 
-model = tf.keras.models.load_model('2018_12_17_22_58_35.h5')
+model = tf.keras.models.load_model('2018_12_17_22_58_35.h5')                # 모델 로드
 model.summary()
 
 
@@ -35,7 +35,7 @@ def crop_eye(img, eye_points):
 
 
 # main
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(0)   # 웹캠 영상 연결
 
 check = False
 start = 0
@@ -45,7 +45,7 @@ while cap.isOpened():
     if not ret:
         break
 
-    img_ori = cv2.resize(img_ori, dsize=(0, 0), fx=0.5, fy=0.5)
+    img_ori = cv2.resize(img_ori, dsize=(500, 500), fx=0.5, fy=0.5)
 
     img = img_ori.copy()
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
