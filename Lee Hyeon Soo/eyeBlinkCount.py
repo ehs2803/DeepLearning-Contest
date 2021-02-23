@@ -12,6 +12,3 @@ def eyeBlinkCount(pred_r, pred_l):
         else:                         #눈깜빡임이 15번이상이라면
             start = time.time()       #시간측정 처음부터 다시시작
             eye_count_min = 0         #눈깜빡임 횟수 0으로 초기화
-            return False              #False반환
-    else:
-        return False                  #시간이 1분미만일 때 판단보류... False반환
