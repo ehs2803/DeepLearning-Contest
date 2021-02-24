@@ -60,31 +60,31 @@
       <!-- /.col-lg-8 -->
       <div class="col-lg-5">
         <h1 class="font-weight-light">Don't sleep!!</h1>
-        <p>이 사이트는 졸음 방지 사이트입니다. 팀원은 이지상, 이현수, 정영도, 오수지, 최영환</p>
-        <a class="btn btn-primary" href="#">기능 설명서</a>
-        <a class="btn btn-primary" href="{% url 'single' %}">기능 실행</a>
+        <p>이 사이트는 졸음 방지 사이트입니다.</p>
+        <p>팀원은 이지상, 이현수, 정영도, 오수지, 최영환</p>
+        <a class="btn btn-primary" href="{% url 'single' %}">test</a>
       </div>
       <!-- /.col-md-4 -->
     </div>
     <!-- /.row -->
 
-    <!-- Call to Action Well -->
+    <!-- Call to Action Well # 필요없는 부분이라 일단 지움
     <div class="card text-white bg-secondary my-5 py-4 text-center">
       <div class="card-body">
         <p class="text-white m-0">This call to action card is a great place to showcase some important information or display a clever tagline!</p>
       </div>
-    </div>
+    </div>-->
 
     <!-- Content Row -->
     <div class="row">
       <div class="col-md-4 mb-5">
         <div class="card h-100">
           <div class="card-body">
-            <h2 class="card-title">Card One</h2>
-            <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Rem magni quas ex numquam, maxime minus quam molestias corporis quod, ea minima accusamus.</p>
+            <h2 class="card-title">졸음 감지</h2>
+            <p class="card-text">눈을 3~4초간 감았을 때 졸음감지 후에 삐소리가 나거나 스트레칭을 알려줌</p>
           </div>
           <div class="card-footer">
-            <a href="#" class="btn btn-primary btn-sm">More Info</a>
+            <a href="{% url 'Drowsiness' %}" class="btn btn-primary btn-sm">실행</a>
           </div>
         </div>
       </div>
@@ -92,11 +92,11 @@
       <div class="col-md-4 mb-5">
         <div class="card h-100">
           <div class="card-body">
-            <h2 class="card-title">Card Two</h2>
-            <p class="card-text">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Quod tenetur ex natus at dolorem enim! Nesciunt pariatur voluptatem sunt quam eaque, vel, non in id dolore voluptates quos eligendi labore.</p>
+            <h2 class="card-title">눈깜빡임 횟수 측정</h2>
+            <p class="card-text">캠화면에 눈깜빡임을 감지하여 눈깜빡임 횟수를 사용자에게 알려줌</p>
           </div>
           <div class="card-footer">
-            <a href="#" class="btn btn-primary btn-sm">More Info</a>
+            <a href="{% url 'Blinking' %}" class="btn btn-primary btn-sm">실행</a>
           </div>
         </div>
       </div>

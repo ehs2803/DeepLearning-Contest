@@ -1,8 +1,0 @@
-from django.urls import path
-from blog import views
-
-urlpatterns =[
-    path("", views.index, name="index"),
-    path("single/", views.single, name="single"),
-    path('video_feed', views.video_feed, name='video_feed')
-]

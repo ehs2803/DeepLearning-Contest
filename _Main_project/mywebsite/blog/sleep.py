@@ -2,7 +2,7 @@ from tensorflow.keras.applications.mobilenet_v2 import preprocess_input
 from tensorflow.keras.preprocessing.image import img_to_array
 from tensorflow.keras.models import load_model
 
-import cv2,dlib,os,urllib.request
+import cv2,dlib,os, urllib.request
 import numpy as np
 from django.conf import settings
 from imutils import face_utils
@@ -21,7 +21,7 @@ class VideoCamera(object):
 
 	def get_frame(self):
 		success, image = self.video.read()
-		image = cv2.resize(image, dsize=(0, 0), fx=0.5, fy=0.5)  # 프레임을 높이, 너비를 각각 절반으로 줄임.
+		image = cv2.resize(image, dsize=(500, 500), fx=0.5, fy=0.5)  # 프레임을 높이, 너비를 각각 절반으로 줄임.
 
 		# img_ori(웹캠에서읽어온 현재시점의 프레임)을 img에 복사
 		img = image.copy()

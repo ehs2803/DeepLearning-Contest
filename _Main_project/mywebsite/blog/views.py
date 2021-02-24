@@ -8,15 +8,25 @@ def index(req):
     context ={
 
     }
-
     return render(req, "index.html", context=context)
 
 def single(req):
     context = {
 
     }
-
     return render(req, "single.html", context=context)
+
+def Drowsiness(req):
+    context = {
+
+    }
+    return render(req, "Drowsiness.html", context=context)
+
+def Blinking(req):
+    context = {
+
+    }
+    return render(req, "Blinking.html", context=context)
 
 def gen(camera):
 	while True:
