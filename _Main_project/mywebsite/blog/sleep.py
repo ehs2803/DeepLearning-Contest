@@ -127,6 +127,8 @@ class VideoCamera(object):
 			cv2.putText(image, state_l, tuple(eye_rect_l[0:2]), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
 			cv2.putText(image, state_r, tuple(eye_rect_r[0:2]), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
 
+
+
 		ret, jpeg = cv2.imencode('.jpg', image)
 
 		return jpeg.tobytes()
