@@ -18,17 +18,20 @@ class VideoCamera(object):
 	def __init__(self):
 		self.video = cv2.VideoCapture(0)		# 웹캠키기
 
+        # 졸음감지 함수 관련변수
 		self.start_sleep = 0               		# 졸음감지 시간측정변수
-		self.check_sleep = False           		# 졸음감지 유무
+		self.check_sleep = False           		# 눈동자 감김 여부
 
+        # 눈깜빡임 감지 함수 관련변수
 		self.start_blink = time.time()   		# 눈깜빡임 횟수 시간측정 변수
 		self.eye_count_min = 0           		# 눈깜빡임 횟수 저장변수
-		self.check_blink = False				# 눈 깜빡임 경고 여부 저장변수
+		self.check_blink = False				# 눈감김 여부
 
-		self.check_sleepfuc = False        		# 졸음감지유무
-		self.start_sleepfuc = 0           		# 졸음감지 알림띄우는 시간측정
-		self.check_blinkfuc = False        		# 눈깜빡임알림유무
-		self.start_blinkfuc = 0           		# 웹캠키기
+        # 졸음감지, 눈깜빡임 text알림 관련변수
+		self.check_sleepfuc = False        		# 졸음감지 알림 유무
+		self.start_sleepfuc = 0           		# 졸음감지 알림 시간측정
+		self.check_blinkfuc = False        		# 눈깜빡임 알림 유무
+		self.start_blinkfuc = 0           		# 눈깜빡임 횟수 경고 알림 시간측정
 
 		self.pred_r = 0.0                  		# 오른쪽 눈 예측 값
 		self.pred_l = 0.0                  		# 왼쪽 눈 예측 값
@@ -72,34 +75,33 @@ class VideoCamera(object):
 		if self.pred_r < 0.1 and self.pred_l < 0.1:			# 두 눈이 감겼을 때
 			if self.check_sleep == True:					# 졸음이 감지된 적이 있는 경우
 				if time.time() - self.start_sleep > 4:		# 4초가 지났을 경우
-					self.start_sleep = time.time()
+					self.start_sleep = time.time()          # 시간측정 시작
 					self.check_sleep = False				# 졸음 감지 변수 False 로 변경
 					return True								# True 반환
 			else:											# 졸음이 감지된 적이 없는 경우
 				self.check_sleep = True						# 졸음 감지 변수를 True 로 변경
-				self.start_sleep = time.time()
+				self.start_sleep = time.time()              # 시간측정 시작
 		else:												# 두 눈을 감지 않았을 때
 			self.check_sleep = False						# 졸음 감지 변수를 False 로 변경
-			self.start_sleep = time.time()
 
 	# 눈동자 깜빡임 횟수 측정 및 경고 여부를 반환하는 함수
-	def eyeBlinkCount(self):
-		if self.check_blink == True and self.pred_l > 0.9 and self.pred_r > 0.9:
-			self.eye_count_min += 1
-			self.check_blink=False
-		if self.pred_r < 0.1 and self.pred_l < 0.1:    # 두눈이 감겼을때
-			self.check_blink=True
-		if time.time() - self.start_blink > 10:
-			if self.eye_count_min < 5:
-				self.start_blink = time.time()
-				self.eye_count_min = 0
-				return True
-			else:
-				self.start_blink = time.time()
-				self.eye_count_min = 0
+	def eyeBlinkDetection(self):
+		if self.check_blink == True and self.pred_l > 0.9 and self.pred_r > 0.9: # 눈동자가 감겼으면서 양쪽 눈동자를 뜬경우
+			self.eye_count_min += 1                    # 눈동자 깜빡임 횟수 변수 1 증가
+			self.check_blink=False                     # 눈동자 감김여부 변수를 False로 변경
+		if self.pred_r < 0.1 and self.pred_l < 0.1:    # 양쪽 눈동자가 감겼을때
+			self.check_blink=True                      # 눈동자 감김여부 변수를 true로 변경
+		if time.time() - self.start_blink > 60:        # 측정시간이 1분(60초)가 지났을 경우
+			if self.eye_count_min < 15:                # 눈동자 깜빡임 횟수가 n번(15번) 미만일 경우
+				self.start_blink = time.time()         # 눈동자 깜빡임 시간 측정 시작
+				self.eye_count_min = 0                 # 눈동자 깜빡임 횟수 저장 변수 0으로 초기화
+ 				return True                            # True 반환
+			else:                                      # 눈동자 깜빡임 횟수가 n번(15번) 이상일 경우
+				self.start_blink = time.time()         # 눈동자 깜빡임 시간 측정 시작
+				self.eye_count_min = 0                 # 눈동자 깜빡임 횟수 저장 변수 0으로 초기화
 
 	def get_frame(self):
-		success, image = self.video.read()
+		success, image = self.video.read()                       #프레임 읽어오기
 		image = cv2.resize(image, dsize=(0, 0), fx=0.5, fy=0.5)  # 프레임을 높이, 너비를 각각 절반으로 줄임.
 
 		# img_ori(웹캠에서읽어온 현재시점의 프레임)을 img에 복사
@@ -142,14 +144,15 @@ class VideoCamera(object):
 			self.pred_l = model.predict(eye_input_l)
 			self.pred_r = model.predict(eye_input_r)
 
-# ============================================
+			# 초, 눈깜빡임 횟수 출력에 대한 문자열 정의
 			state_min = '%d'
-			state_min = state_min % (time.time() - self.start_blink)
 			state_count = '%d'
+			# % operator 방식의 문자열 포맷팅
+			state_min = state_min % (time.time() - self.start_blink)
 			state_count = state_count % self.eye_count_min
-			#1분을 초로 출력
+			# 1분을 초로 출력
 			cv2.putText(image, state_min, (0, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-			#1분동안 눈깜빡임횟수 출력
+			# 1분동안 눈동자 깜빡임 횟수 출력
 			cv2.putText(image, state_count, (0, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
 
             # 졸음감지하기
@@ -157,33 +160,33 @@ class VideoCamera(object):
 			# 졸음이 감지된 경우
 			if check:
 				self.check_sleepfuc = True					# 졸음 감지 여부를 True 로 변경
-				self.start_sleepfuc = time.time()
+				self.start_sleepfuc = time.time()           # text 알림 시간을 위한 시간측정 시작
 				tts_s_path = 'data/notification1.mp3'		# 졸음감지 알림 TTS 파일 경로
 				playsound(tts_s_path)						# 졸음감지 알림 TTS 파일 재생
 
 			# 눈깜빡임 감지하기
-			check = self.eyeBlinkCount()
+			check = self.eyeBlinkDetection()
 			# 눈동자 깜빡임 횟수 경고 측정
 			if check:
-				self.check_blinkfuc = True
-				self.start_blinkfuc = time.time()
-			    ########################################졸음감지 알림코드 들어갈곳...
+				self.check_blinkfuc = True                  # 눈동자 깜빡임 알림 여부를 True 로 변경
+				self.start_blinkfuc = time.time()           # 눈동자 깜빡임 알림 시간을 위한 시간측정 시작
+			    #tts_b_path = 'data/notification2.mp3'      # 눈동자 깜빡임 알림 TTS 파일 경로
+			    #playsound(tts_b_path)                      # 눈동자 깜빡임 알림 TTS 파일 재생
 
-            # 눈깜빡임, 졸음감지를 한다면 윕캠상에 2초동안 출력
-			if self.check_sleepfuc == True:
-				if time.time() - self.start_sleepfuc > 2:
-					self.check_sleepfuc = False
-					self.start_sleepfuc = 0
-				else:
-					cv2.putText(image, "sleep", (0, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+            # 졸음감지 알림 웹캠 화면에 text로 출력
+			if self.check_sleepfuc == True:                 # 졸음 감지 여부가 True 인 경우
+				if time.time() - self.start_sleepfuc > 2:   # 알림시간이 2초가 지났을 때
+					self.check_sleepfuc = False             # 졸음 감지 여부를 False로 변경
+				else:                                       # 알림시간이 2초 미만일 때
+					cv2.putText(image, "sleep", (0, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2) #text출력
 
-			if self.check_blinkfuc == True:
-				if time.time() - self.start_blinkfuc>2:
-					self.check_blinkfuc = False
-					self.start_blinkfuc = 0
-				else:
-					cv2.putText(image, "eye blink", (0, 80), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-# ==========================================
+            # 눈동자 깜빡임 알림 웹캠 화면에 text로 출력
+			if self.check_blinkfuc == True:                 # 눈동자 깜빡임 알림 여부가 True 인 경우
+				if time.time() - self.start_blinkfuc>2:     # 알림시간이 2초가 지났을 때
+					self.check_blinkfuc = False             # 눈동자 깜빡임 알림 여부를 False로 변경
+				else:                                       # 알림시간이 2초 미만일 때
+					cv2.putText(image, "eye blink", (0, 80), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2) #text출력
+
 			# visualize
 			# 모델출력값이 0이라면 '_ 0.0'으로, 그 외의 숫자라면 '0 0.3'형식으로 문자열 반환하는 문자열을 정의
 			state_l = 'O %.1f' if self.pred_l > 0.1 else '- %.1f'
