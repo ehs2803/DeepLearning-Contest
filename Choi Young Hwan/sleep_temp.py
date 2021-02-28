@@ -101,7 +101,13 @@ class VideoCamera(object):
 				self.eye_count_min = 0                 # 눈동자 깜빡임 횟수 저장 변수 0으로 초기화
 
 	def get_frame(self):
-		success, image = self.video.read()                       #프레임 읽어오기
+		success, image = self.video.read()
+		image = cv2.resize(image, dsize=(0, 0), fx=0.5, fy=0.5)  # 프레임을 높이, 너비를 각각 절반으로 줄임.
+		ret, jpeg = cv2.imencode('.jpg', image)
+		return jpeg.tobytes()
+
+	def get_sleep(self):
+		success, image = self.video.read()  # 프레임 읽어오기
 		image = cv2.resize(image, dsize=(0, 0), fx=0.5, fy=0.5)  # 프레임을 높이, 너비를 각각 절반으로 줄임.
 
 		# img_ori(웹캠에서읽어온 현재시점의 프레임)을 img에 복사
@@ -155,60 +161,62 @@ class VideoCamera(object):
 			# 1분동안 눈동자 깜빡임 횟수 출력
 			cv2.putText(image, state_count, (0, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
 
-            # 졸음감지하기
+			# 졸음감지하기
 			check = self.sleepDetection()
 			# 졸음이 감지된 경우
-			if check:
-				self.check_sleepfuc = True					# 졸음 감지 여부를 True 로 변경
-				self.start_sleepfuc = time.time()           # text 알림 시간을 위한 시간측정 시작
-				tts_s_path = 'data/notification1.mp3'		# 졸음감지 알림 TTS 파일 경로
-				playsound(tts_s_path)						# 졸음감지 알림 TTS 파일 재생
+			return check
 
-			# 눈깜빡임 감지하기
-			check = self.eyeBlinkDetection()
-			# 눈동자 깜빡임 횟수 경고 측정
-			if check:
-				self.check_blinkfuc = True                  # 눈동자 깜빡임 알림 여부를 True 로 변경
-				self.start_blinkfuc = time.time()           # 눈동자 깜빡임 알림 시간을 위한 시간측정 시작
-			    #tts_b_path = 'data/notification2.mp3'      # 눈동자 깜빡임 알림 TTS 파일 경로
-			    #playsound(tts_b_path)                      # 눈동자 깜빡임 알림 TTS 파일 재생
+	def blink_count(self):
+		success, image = self.video.read()  # 프레임 읽어오기
+		image = cv2.resize(image, dsize=(0, 0), fx=0.5, fy=0.5)  # 프레임을 높이, 너비를 각각 절반으로 줄임.
+		# cv2.cvtcolor(원본 이미지, 색상 변환 코드)를 이용하여 이미지의 색상 공간을 변경
+		# 변환코드(code) cv2.COLOR_BGR2GRAY는 출력영상이 GRAY로 변환
+		gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-            # 졸음감지 알림 웹캠 화면에 text로 출력
-			if self.check_sleepfuc == True:                 # 졸음 감지 여부가 True 인 경우
-				if time.time() - self.start_sleepfuc > 2:   # 알림시간이 2초가 지났을 때
-					self.check_sleepfuc = False             # 졸음 감지 여부를 False로 변경
-				else:                                       # 알림시간이 2초 미만일 때
-					cv2.putText(image, "sleep", (0, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2) #text출력
+		# detector에 의해 프레임 안에 얼굴로 판단되는 위치가 넘어오게 되는데 이 값을 faces에 할당
+		faces = detector(gray)
 
-            # 눈동자 깜빡임 알림 웹캠 화면에 text로 출력
-			if self.check_blinkfuc == True:                 # 눈동자 깜빡임 알림 여부가 True 인 경우
-				if time.time() - self.start_blinkfuc>2:     # 알림시간이 2초가 지났을 때
-					self.check_blinkfuc = False             # 눈동자 깜빡임 알림 여부를 False로 변경
-				else:                                       # 알림시간이 2초 미만일 때
-					cv2.putText(image, "eye blink", (0, 80), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2) #text출력
+		# detector로 찾아낸 얼굴개수는 여러개일 수 있어 for 반복문을 통해 인식된 얼굴 개수만큼 반복
+		# 만약 웹캠에 사람2명 있다면 print(len(faces))의 출력값은 2
+		for face in faces:
+			# predictor를 통해 68개의 좌표를 찍음. 위치만 찍는거니까 x좌표, y좌표로 이루어져 이런 [x좌표, y좌표]의 값, 68개가 shapes에 할당
+			shapes = predictor(gray, face)
+			# 얼굴 랜드마크(x, y) 좌표를 NumPy로 변환
+			shapes = face_utils.shape_to_np(shapes)
 
-			# visualize
-			# 모델출력값이 0이라면 '_ 0.0'으로, 그 외의 숫자라면 '0 0.3'형식으로 문자열 반환하는 문자열을 정의
-			state_l = 'O %.1f' if self.pred_l > 0.1 else '- %.1f'
-			state_r = 'O %.1f' if self.pred_r > 0.1 else '- %.1f'
+			# eye_img : 눈동자 사진 eye_rect : 눈동자 좌표값
+			eye_img_l, eye_rect_l = self.crop_eye(gray, shapes[36:42])
+			eye_img_r, eye_rect_r = self.crop_eye(gray, shapes[42:48])
 
+			# 왼쪽, 오른쪽 눈 사진을 딥러닝모델에 넣기위해 IMG_SIZE크기로 이미지 크기 조절
+			eye_img_l = cv2.resize(eye_img_l, dsize=IMG_SIZE)
+			eye_img_r = cv2.resize(eye_img_r, dsize=IMG_SIZE)
+
+			# cv2.flip(src, flipCode) : 사진뒤집기 메소드. flipCode=1은 좌우반전
+			# 추정이지만 cnn모델이 왼쪽눈으로 훈련되있어서 오른쪽눈사진만 좌우반전(flip)시켜서 왼쪽눈처럼 만들어 cnn모델에 사용하기 위한 것 같음.
+			eye_img_r = cv2.flip(eye_img_r, flipCode=1)
+
+			# cnn모델에 입력할 값 전처리작업
+			# 눈부분 사진을 copy하고 reshape함수를 통해 차원의형태를 변경하고 astype으로 np.float32형태로 만들고 255.0으로 나눠줌
+			eye_input_l = eye_img_l.copy().reshape((1, IMG_SIZE[1], IMG_SIZE[0], 1)).astype(np.float32) / 255.
+			eye_input_r = eye_img_r.copy().reshape((1, IMG_SIZE[1], IMG_SIZE[0], 1)).astype(np.float32) / 255.
+
+			# cnn모델 predict메소드에 가공한 전처리한 눈사진을 넣어 값을 예측.
+			# 모델출력값은 pred_l, pred_r에 0.0~1.0 사이 값이 저장. 눈을 크게뜰수록 1에 가까워짐.
+			self.pred_l = model.predict(eye_input_l)
+			self.pred_r = model.predict(eye_input_r)
+
+			# 초, 눈깜빡임 횟수 출력에 대한 문자열 정의
+			state_min = '%d'
+			state_count = '%d'
 			# % operator 방식의 문자열 포맷팅
-			state_l = state_l % self.pred_l
-			state_r = state_r % self.pred_r
+			state_min = state_min % (time.time() - self.start_blink)
+			state_count = state_count % self.eye_count_min
+			# 1분을 초로 출력
+			cv2.putText(image, state_min, (0, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+			# 1분동안 눈동자 깜빡임 횟수 출력
+			cv2.putText(image, state_count, (0, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
 
-			# cv2.rectangle(이미지, (x1,y1), (x2,y2), (B,G,R), 두께) 사각형 그림. (x1,y1)의 좌측 상단모서리와 (x2,y2)의 우측 하단모서리
-			cv2.rectangle(image, pt1=tuple(eye_rect_l[0:2]), pt2=tuple(eye_rect_l[2:4]), color=(255, 255, 255),
-						  thickness=2)
-			cv2.rectangle(image, pt1=tuple(eye_rect_r[0:2]), pt2=tuple(eye_rect_r[2:4]), color=(255, 255, 255),
-						  thickness=2)
+			check = self.eyeBlinkDetection(self)
 
-			# cv2.putText(이미지, 문자, (x,y), 글꼴, 글자 크기, (B,G,R), 두께)을 이용하여 문자를 그림
-			# 문자 내용을 가지는 문자열을 (x, y) 위치에 표시
-			cv2.putText(image, state_l, tuple(eye_rect_l[0:2]), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
-			cv2.putText(image, state_r, tuple(eye_rect_r[0:2]), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
-
-		#image = cv2.resize(image, dsize=(700, 700))  # 프레임을 높이, 너비를 700,700으로 설정
-
-		ret, jpeg = cv2.imencode('.jpg', image)      #image를 jpg로 이미지를 인코딩
-
-		return jpeg.tobytes()
+			return check
