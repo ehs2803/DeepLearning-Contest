@@ -82,9 +82,12 @@ class Sleep_Detector(object):
 	# 웹캠 영상 연결 및 프레임 읽기
 	# 프레임에 대한 딥러닝 모델 예측
 	def get_frame(self):
-		self.success, self.image = self.video.read()				 # 프레임 읽어오기
-		self.image = cv2.resize(self.image, dsize=(0, 0), fx=0.5, fy=0.5) 	 # 프레임을 높이, 너비를 각각 절반으로 줄임.
+		success, image = self.video.read()				 # 프레임 읽어오기
+		image = cv2.resize(image, dsize=(0, 0), fx=0.5, fy=0.5) 	 # 프레임을 높이, 너비를 각각 절반으로 줄임.
 
+		# img_ori(웹캠에서읽어온 현재시점의 프레임)을 img에 복사
+		img = image.copy()
+		
 		# cv2.cvtcolor(원본 이미지, 색상 변환 코드)를 이용하여 이미지의 색상 공간을 변경
 		# 변환코드(code) cv2.COLOR_BGR2GRAY는 출력영상이 GRAY로 변환
 		gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -217,9 +220,12 @@ class Blink_Detector(object):
 	# 웹캠 영상 연결 및 프레임 읽기
 	# 프레임에 대한 딥러닝 모델 예측
 	def get_frame(self):
-		self.success, self.image = self.video.read()  # 프레임 읽어오기
-		self.image = cv2.resize(self.image, dsize=(0, 0), fx=0.5, fy=0.5)  # 프레임을 높이, 너비를 각각 절반으로 줄임.
+		success, image = self.video.read()  # 프레임 읽어오기
+		image = cv2.resize(image, dsize=(0, 0), fx=0.5, fy=0.5)  # 프레임을 높이, 너비를 각각 절반으로 줄임.
 
+		# img_ori(웹캠에서읽어온 현재시점의 프레임)을 img에 복사
+		img = image.copy()
+		
 		# cv2.cvtcolor(원본 이미지, 색상 변환 코드)를 이용하여 이미지의 색상 공간을 변경
 		# 변환코드(code) cv2.COLOR_BGR2GRAY는 출력영상이 GRAY로 변환
 		gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
