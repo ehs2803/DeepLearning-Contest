@@ -90,7 +90,7 @@ class Sleep_Detector(object):
 		
 		# cv2.cvtcolor(원본 이미지, 색상 변환 코드)를 이용하여 이미지의 색상 공간을 변경
 		# 변환코드(code) cv2.COLOR_BGR2GRAY는 출력영상이 GRAY로 변환
-		gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+		gray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
 
 		# detector에 의해 프레임 안에 얼굴로 판단되는 위치가 넘어오게 되는데 이 값을 faces에 할당
 		faces = detector(gray)
@@ -228,7 +228,7 @@ class Blink_Detector(object):
 		
 		# cv2.cvtcolor(원본 이미지, 색상 변환 코드)를 이용하여 이미지의 색상 공간을 변경
 		# 변환코드(code) cv2.COLOR_BGR2GRAY는 출력영상이 GRAY로 변환
-		gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+		gray = cv2.cvtColor(self.image, cv2.COLOR_BGR2GRAY)
 
 		# detector에 의해 프레임 안에 얼굴로 판단되는 위치가 넘어오게 되는데 이 값을 faces에 할당
 		faces = detector(gray)
