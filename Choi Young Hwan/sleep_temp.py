@@ -17,6 +17,8 @@ class VideoCamera(object):
 	# 생성자
 	def __init__(self):
 		self.video = cv2.VideoCapture(0)		# 웹캠키기
+		self.success							# 웹캠 연결 성공 여부
+		self.image								# 영상 프레임 값(?)
 
         # 졸음감지 함수 관련변수
 		self.start_sleep = 0               		# 졸음감지 시간측정변수
@@ -100,123 +102,70 @@ class VideoCamera(object):
 				self.start_blink = time.time()         # 눈동자 깜빡임 시간 측정 시작
 				self.eye_count_min = 0                 # 눈동자 깜빡임 횟수 저장 변수 0으로 초기화
 
+	# 웹캠 영상 연결 및 프레임 읽기
+	# 프레임에 대한 딥러닝 모델 예측
 	def get_frame(self):
-		success, image = self.video.read()
-		image = cv2.resize(image, dsize=(0, 0), fx=0.5, fy=0.5)  # 프레임을 높이, 너비를 각각 절반으로 줄임.
-		ret, jpeg = cv2.imencode('.jpg', image)
+		self.success, self.image = self.video.read()				 # 프레임 읽어오기
+		self.image = cv2.resize(self.image, dsize=(0, 0), fx=0.5, fy=0.5) 	 # 프레임을 높이, 너비를 각각 절반으로 줄임.
+
+		# cv2.cvtcolor(원본 이미지, 색상 변환 코드)를 이용하여 이미지의 색상 공간을 변경
+		# 변환코드(code) cv2.COLOR_BGR2GRAY는 출력영상이 GRAY로 변환
+		gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+		# detector에 의해 프레임 안에 얼굴로 판단되는 위치가 넘어오게 되는데 이 값을 faces에 할당
+		faces = detector(gray)
+
+		# detector로 찾아낸 얼굴개수는 여러개일 수 있어 for 반복문을 통해 인식된 얼굴 개수만큼 반복
+		# 만약 웹캠에 사람2명 있다면 print(len(faces))의 출력값은 2
+		for face in faces:
+			# predictor를 통해 68개의 좌표를 찍음. 위치만 찍는거니까 x좌표, y좌표로 이루어져 이런 [x좌표, y좌표]의 값, 68개가 shapes에 할당
+			shapes = predictor(gray, face)
+			# 얼굴 랜드마크(x, y) 좌표를 NumPy로 변환
+			shapes = face_utils.shape_to_np(shapes)
+
+			# eye_img : 눈동자 사진 eye_rect : 눈동자 좌표값
+			eye_img_l, eye_rect_l = self.crop_eye(gray, shapes[36:42])
+			eye_img_r, eye_rect_r = self.crop_eye(gray, shapes[42:48])
+
+			# 왼쪽, 오른쪽 눈 사진을 딥러닝모델에 넣기위해 IMG_SIZE크기로 이미지 크기 조절
+			eye_img_l = cv2.resize(eye_img_l, dsize=IMG_SIZE)
+			eye_img_r = cv2.resize(eye_img_r, dsize=IMG_SIZE)
+
+			# cv2.flip(src, flipCode) : 사진뒤집기 메소드. flipCode=1은 좌우반전
+			# 추정이지만 cnn모델이 왼쪽눈으로 훈련되있어서 오른쪽눈사진만 좌우반전(flip)시켜서 왼쪽눈처럼 만들어 cnn모델에 사용하기 위한 것 같음.
+			eye_img_r = cv2.flip(eye_img_r, flipCode=1)
+
+			# cnn모델에 입력할 값 전처리작업
+			# 눈부분 사진을 copy하고 reshape함수를 통해 차원의형태를 변경하고 astype으로 np.float32형태로 만들고 255.0으로 나눠줌
+			eye_input_l = eye_img_l.copy().reshape((1, IMG_SIZE[1], IMG_SIZE[0], 1)).astype(np.float32) / 255.
+			eye_input_r = eye_img_r.copy().reshape((1, IMG_SIZE[1], IMG_SIZE[0], 1)).astype(np.float32) / 255.
+
+			# cnn모델 predict메소드에 가공한 전처리한 눈사진을 넣어 값을 예측.
+			# 모델출력값은 pred_l, pred_r에 0.0~1.0 사이 값이 저장. 눈을 크게뜰수록 1에 가까워짐.
+			self.pred_l = model.predict(eye_input_l)
+			self.pred_r = model.predict(eye_input_r)
+
+		# 임시 코드
+		# 초, 눈깜빡임 횟수 출력에 대한 문자열 정의
+		state_min = '%d'
+		state_count = '%d'
+		# % operator 방식의 문자열 포맷팅
+		state_min = state_min % (time.time() - self.start_blink)
+		state_count = state_count % self.eye_count_min
+
+		# 1분을 초로 출력
+		cv2.putText(self.image, state_min, (0, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+		# 1분동안 눈동자 깜빡임 횟수 출력
+		cv2.putText(self.image, state_count, (0, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+
+		# 영상 송출
+		ret, jpeg = cv2.imencode('.jpg', self.image)
 		return jpeg.tobytes()
 
+	# 졸음감지 여부 반환 함수
 	def get_sleep(self):
-		success, image = self.video.read()  # 프레임 읽어오기
-		image = cv2.resize(image, dsize=(0, 0), fx=0.5, fy=0.5)  # 프레임을 높이, 너비를 각각 절반으로 줄임.
+		return self.sleepDetection()
 
-		# img_ori(웹캠에서읽어온 현재시점의 프레임)을 img에 복사
-		img = image.copy()
-
-		# cv2.cvtcolor(원본 이미지, 색상 변환 코드)를 이용하여 이미지의 색상 공간을 변경
-		# 변환코드(code) cv2.COLOR_BGR2GRAY는 출력영상이 GRAY로 변환
-		gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
-		# detector에 의해 프레임 안에 얼굴로 판단되는 위치가 넘어오게 되는데 이 값을 faces에 할당
-		faces = detector(gray)
-
-		# detector로 찾아낸 얼굴개수는 여러개일 수 있어 for 반복문을 통해 인식된 얼굴 개수만큼 반복
-		# 만약 웹캠에 사람2명 있다면 print(len(faces))의 출력값은 2
-		for face in faces:
-			# predictor를 통해 68개의 좌표를 찍음. 위치만 찍는거니까 x좌표, y좌표로 이루어져 이런 [x좌표, y좌표]의 값, 68개가 shapes에 할당
-			shapes = predictor(gray, face)
-			# 얼굴 랜드마크(x, y) 좌표를 NumPy로 변환
-			shapes = face_utils.shape_to_np(shapes)
-
-			# eye_img : 눈동자 사진 eye_rect : 눈동자 좌표값
-			eye_img_l, eye_rect_l = self.crop_eye(gray, shapes[36:42])
-			eye_img_r, eye_rect_r = self.crop_eye(gray, shapes[42:48])
-
-			# 왼쪽, 오른쪽 눈 사진을 딥러닝모델에 넣기위해 IMG_SIZE크기로 이미지 크기 조절
-			eye_img_l = cv2.resize(eye_img_l, dsize=IMG_SIZE)
-			eye_img_r = cv2.resize(eye_img_r, dsize=IMG_SIZE)
-
-			# cv2.flip(src, flipCode) : 사진뒤집기 메소드. flipCode=1은 좌우반전
-			# 추정이지만 cnn모델이 왼쪽눈으로 훈련되있어서 오른쪽눈사진만 좌우반전(flip)시켜서 왼쪽눈처럼 만들어 cnn모델에 사용하기 위한 것 같음.
-			eye_img_r = cv2.flip(eye_img_r, flipCode=1)
-
-			# cnn모델에 입력할 값 전처리작업
-			# 눈부분 사진을 copy하고 reshape함수를 통해 차원의형태를 변경하고 astype으로 np.float32형태로 만들고 255.0으로 나눠줌
-			eye_input_l = eye_img_l.copy().reshape((1, IMG_SIZE[1], IMG_SIZE[0], 1)).astype(np.float32) / 255.
-			eye_input_r = eye_img_r.copy().reshape((1, IMG_SIZE[1], IMG_SIZE[0], 1)).astype(np.float32) / 255.
-
-			# cnn모델 predict메소드에 가공한 전처리한 눈사진을 넣어 값을 예측.
-			# 모델출력값은 pred_l, pred_r에 0.0~1.0 사이 값이 저장. 눈을 크게뜰수록 1에 가까워짐.
-			self.pred_l = model.predict(eye_input_l)
-			self.pred_r = model.predict(eye_input_r)
-
-			# 초, 눈깜빡임 횟수 출력에 대한 문자열 정의
-			state_min = '%d'
-			state_count = '%d'
-			# % operator 방식의 문자열 포맷팅
-			state_min = state_min % (time.time() - self.start_blink)
-			state_count = state_count % self.eye_count_min
-			# 1분을 초로 출력
-			cv2.putText(image, state_min, (0, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-			# 1분동안 눈동자 깜빡임 횟수 출력
-			cv2.putText(image, state_count, (0, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-
-			# 졸음감지하기
-			check = self.sleepDetection()
-			# 졸음이 감지된 경우
-			return check
-
+	# 눈동자 깜빡임 횟수 부족 여부 반환 함수
 	def blink_count(self):
-		success, image = self.video.read()  # 프레임 읽어오기
-		image = cv2.resize(image, dsize=(0, 0), fx=0.5, fy=0.5)  # 프레임을 높이, 너비를 각각 절반으로 줄임.
-		# cv2.cvtcolor(원본 이미지, 색상 변환 코드)를 이용하여 이미지의 색상 공간을 변경
-		# 변환코드(code) cv2.COLOR_BGR2GRAY는 출력영상이 GRAY로 변환
-		gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-
-		# detector에 의해 프레임 안에 얼굴로 판단되는 위치가 넘어오게 되는데 이 값을 faces에 할당
-		faces = detector(gray)
-
-		# detector로 찾아낸 얼굴개수는 여러개일 수 있어 for 반복문을 통해 인식된 얼굴 개수만큼 반복
-		# 만약 웹캠에 사람2명 있다면 print(len(faces))의 출력값은 2
-		for face in faces:
-			# predictor를 통해 68개의 좌표를 찍음. 위치만 찍는거니까 x좌표, y좌표로 이루어져 이런 [x좌표, y좌표]의 값, 68개가 shapes에 할당
-			shapes = predictor(gray, face)
-			# 얼굴 랜드마크(x, y) 좌표를 NumPy로 변환
-			shapes = face_utils.shape_to_np(shapes)
-
-			# eye_img : 눈동자 사진 eye_rect : 눈동자 좌표값
-			eye_img_l, eye_rect_l = self.crop_eye(gray, shapes[36:42])
-			eye_img_r, eye_rect_r = self.crop_eye(gray, shapes[42:48])
-
-			# 왼쪽, 오른쪽 눈 사진을 딥러닝모델에 넣기위해 IMG_SIZE크기로 이미지 크기 조절
-			eye_img_l = cv2.resize(eye_img_l, dsize=IMG_SIZE)
-			eye_img_r = cv2.resize(eye_img_r, dsize=IMG_SIZE)
-
-			# cv2.flip(src, flipCode) : 사진뒤집기 메소드. flipCode=1은 좌우반전
-			# 추정이지만 cnn모델이 왼쪽눈으로 훈련되있어서 오른쪽눈사진만 좌우반전(flip)시켜서 왼쪽눈처럼 만들어 cnn모델에 사용하기 위한 것 같음.
-			eye_img_r = cv2.flip(eye_img_r, flipCode=1)
-
-			# cnn모델에 입력할 값 전처리작업
-			# 눈부분 사진을 copy하고 reshape함수를 통해 차원의형태를 변경하고 astype으로 np.float32형태로 만들고 255.0으로 나눠줌
-			eye_input_l = eye_img_l.copy().reshape((1, IMG_SIZE[1], IMG_SIZE[0], 1)).astype(np.float32) / 255.
-			eye_input_r = eye_img_r.copy().reshape((1, IMG_SIZE[1], IMG_SIZE[0], 1)).astype(np.float32) / 255.
-
-			# cnn모델 predict메소드에 가공한 전처리한 눈사진을 넣어 값을 예측.
-			# 모델출력값은 pred_l, pred_r에 0.0~1.0 사이 값이 저장. 눈을 크게뜰수록 1에 가까워짐.
-			self.pred_l = model.predict(eye_input_l)
-			self.pred_r = model.predict(eye_input_r)
-
-			# 초, 눈깜빡임 횟수 출력에 대한 문자열 정의
-			state_min = '%d'
-			state_count = '%d'
-			# % operator 방식의 문자열 포맷팅
-			state_min = state_min % (time.time() - self.start_blink)
-			state_count = state_count % self.eye_count_min
-			# 1분을 초로 출력
-			cv2.putText(image, state_min, (0, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-			# 1분동안 눈동자 깜빡임 횟수 출력
-			cv2.putText(image, state_count, (0, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-
-			check = self.eyeBlinkDetection(self)
-
-			return check
+		return self.eyeBlinkDetection(self)
