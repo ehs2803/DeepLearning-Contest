@@ -22,10 +22,6 @@ class Sleep_Detector(object):
         self.start_sleep = 0  # 졸음감지 시간측정변수
         self.check_sleep = False  # 눈동자 감김 여부
 
-        # 졸음감지 text 알림 관련 변수
-        self.check_sleepfuc = False  # 졸음감지 알림 유무
-        self.start_sleepfuc = 0  # 졸음감지 알림 시간측정
-
         # 딥러닝 모델 예측 값 관련 변수
         self.pred_r = 0.0  # 오른쪽 눈 예측 값
         self.pred_l = 0.0  # 왼쪽 눈 예측 값
@@ -149,11 +145,9 @@ class Sleep_Detector(object):
 
     # 졸음감지 여부 반환 함수
     def get_sleep(self):
-        if self.sleepDetection():
-            self.check_sleepfuc = True
-            self.start_sleepfuc = time.time()
-            tts_s_path = 'data/notification1.mp3'
-            playsound(tts_s_path)
+        if self.sleepDetection():                       # 졸음감지를 하면
+            tts_s_path = 'data/notification1.mp3'       # 알림 파일 경로
+            playsound(tts_s_path)                       # 음성으로 알림
 
 
 # Blink_Detector 클래스
@@ -167,10 +161,6 @@ class Blink_Detector(object):
         self.start_blink = time.time()  # 눈깜빡임 횟수 시간측정 변수
         self.eye_count_min = 0  # 눈깜빡임 횟수 저장변수
         self.check_blink = False  # 눈감김 여부
-
-        # 눈깜빡임 text알림 관련변수
-        self.check_blinkfuc = False  # 눈깜빡임 알림 유무
-        self.start_blinkfuc = 0  # 눈깜빡임 횟수 경고 알림 시간측정
 
         self.pred_r = 0.0  # 오른쪽 눈 예측 값
         self.pred_l = 0.0  # 왼쪽 눈 예측 값
@@ -303,21 +293,12 @@ class Blink_Detector(object):
         # 1분동안 눈동자 깜빡임 횟수 출력
         cv2.putText(self.image, state_count, (0, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
 
-
-
         # 영상 송출
         ret, jpeg = cv2.imencode('.jpg', self.image)
         return jpeg.tobytes()
 
     # 눈동자 깜빡임 횟수 부족 여부 반환 함수
     def blink_count(self):
-        if self.eyeBlinkDetection():
-            self.check_blinkfuc = True
-            self.start_blinkfuc = time.time()
-
-        if self.check_blinkfuc:
-            if time.time() - self.start_blinkfuc > 2:
-                self.check_blinkfuc = False
-                self.start_blinkfuc = 0
-            else:
-                cv2.putText(self.image, "eye blink", (0, 80), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+        if self.eyeBlinkDetection():                # 눈동자 깜빡임의 횟수가 적으면
+            tts_b_path = 'data/notification2.mp3'   # 알림 음성 파일 경로
+            playsound(tts_b_path)                   # 음성으로 알림
