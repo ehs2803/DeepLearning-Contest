@@ -78,7 +78,7 @@ class Sleep_Detector(object):
     # 프레임에 대한 딥러닝 모델 예측
     def get_frame(self):
         self.success, self.image = self.video.read()  # 프레임 읽어오기
-        self.image = cv2.resize(self.image, dsize=(0, 0), fx=0.5, fy=0.5)  # 프레임을 높이, 너비를 각각 절반으로 줄임.
+        self.image = cv2.resize(self.image, dsize=(650, 550), fx=0.5, fy=0.5)  # 프레임을 높이, 너비를 각각 절반으로 줄임.
 
         # cv2.cvtcolor(원본 이미지, 색상 변환 코드)를 이용하여 이미지의 색상 공간을 변경
         # 변환코드(code) cv2.COLOR_BGR2GRAY는 출력영상이 GRAY로 변환
