@@ -1,4 +1,0 @@
-https://www.youtube.com/watch?v=jS4fLseF_cs
-
-15분까지 보고 개발환경 설치하고 장고 맛보길바람
-다보면 좋을거 같음
