@@ -5,30 +5,30 @@ from django.conf import settings
 from imutils import face_utils
 from playsound import playsound
 
-IMG_SIZE = (34, 26)
-detector = dlib.get_frontal_face_detector()  # 정면 얼굴 감지기 로드
+IMG_SIZE = (34, 26)                                                                 # 눈동자 이미지 사이즈 변수
+detector = dlib.get_frontal_face_detector()                                         # 정면 얼굴 감지기 로드
 model = load_model(os.path.join(settings.BASE_DIR, 'data/2018_12_17_22_58_35.h5'))  # 눈동자 깜빡임 감지 모델 로드
-predictor = dlib.shape_predictor('data/shape_predictor_68_face_landmarks.dat')  # 얼굴 랜드마크 좌표값 반환 함수
+predictor = dlib.shape_predictor('data/shape_predictor_68_face_landmarks.dat')      # 얼굴 랜드마크 좌표값 반환 함수
 
 
 # Sleep_Detector 클래스
 class Sleep_Detector(object):
     # 생성자
     def __init__(self):
-        self.video = cv2.VideoCapture(0)  # 웹캠키기
-        self.success, self.image = self.video.read()  # 프레임 읽어오기
+        self.video = cv2.VideoCapture(0)                # 웹캠 연결
+        self.success, self.image = self.video.read()    # 프레임 읽어오기 success : 연결 성공 여부   image : 프레임 값
 
         # 졸음감지 함수 관련변수
-        self.start_sleep = 0  # 졸음감지 시간측정변수
-        self.check_sleep = False  # 눈동자 감김 여부
+        self.start_sleep = 0                            # 졸음감지 시간측정변수
+        self.check_sleep = False                        # 눈동자 감김 여부
 
         # 딥러닝 모델 예측 값 관련 변수
-        self.pred_r = 0.0  # 오른쪽 눈 예측 값
-        self.pred_l = 0.0  # 왼쪽 눈 예측 값
+        self.pred_r = 0.0                               # 오른쪽 눈 예측 값
+        self.pred_l = 0.0                               # 왼쪽 눈 예측 값
 
     # 소멸자(웹캠 종료)
     def __del__(self):
-        self.video.release()
+        self.video.release()                            # 웹캠 연결 해제
 
     # 매개변수 img 프레임에서 눈을 찾아 눈부분의 image와 좌표를 반환하는 함수
     def crop_eye(self, img, eye_points):
@@ -58,27 +58,29 @@ class Sleep_Detector(object):
         # 프레임 gray 의 눈사진 부분을 슬라이싱해서 eye_img 에 할당. eye_img : 눈부분 사진
         eye_img = img[eye_rect[1]:eye_rect[3], eye_rect[0]:eye_rect[2]]
 
+        # 눈부분 사진과 눈부분 사각형 좌표값 반환
         return eye_img, eye_rect
 
     # 졸음 감지 함수
+    # 졸음이 감지되면 True 를 반환하면서 함수를 종료함
     def sleepDetection(self):
-        if self.pred_r < 0.1 and self.pred_l < 0.1:  # 두 눈이 감겼을 때
-            if self.check_sleep == True:  # 졸음이 감지된 적이 있는 경우
-                if time.time() - self.start_sleep > 4:  # 4초가 지났을 경우
-                    self.start_sleep = time.time()  # 시간측정 시작
-                    self.check_sleep = False  # 졸음 감지 변수 False 로 변경
-                    return True  # True 반환
-            else:  # 졸음이 감지된 적이 없는 경우
-                self.check_sleep = True  # 졸음 감지 변수를 True 로 변경
-                self.start_sleep = time.time()  # 시간측정 시작
-        else:  # 두 눈을 감지 않았을 때
-            self.check_sleep = False  # 졸음 감지 변수를 False 로 변경
+        if self.pred_r < 0.1 and self.pred_l < 0.1:                 # 두 눈이 감겼을 때
+            if self.check_sleep == True:                            # 졸음이 감지된 적이 있는 경우
+                if time.time() - self.start_sleep > 4:              # 4초가 지났을 경우
+                    self.start_sleep = time.time()                  # 시간측정 시작
+                    self.check_sleep = False                        # 졸음 감지 변수 False 로 변경
+                    return True                                     # 졸음이 감지된 상황 -> True 반환
+            else:                                                   # 졸음이 감지된 적이 없는 경우
+                self.check_sleep = True                             # 졸음 감지 변수를 True 로 변경
+                self.start_sleep = time.time()                      # 시간측정 시작
+        else:                                                       # 두 눈을 감지 않았을 때
+            self.check_sleep = False                                # 졸음 감지 변수를 False 로 변경
 
     # 웹캠 영상 연결 및 프레임 읽기
     # 프레임에 대한 딥러닝 모델 예측
     def get_frame(self):
-        self.success, self.image = self.video.read()  # 프레임 읽어오기
-        self.image = cv2.resize(self.image, dsize=(650, 550), fx=0.5, fy=0.5)  # 프레임을 높이, 너비를 각각 절반으로 줄임.
+        self.success, self.image = self.video.read()                            # 프레임 읽어오기
+        self.image = cv2.resize(self.image, dsize=(650, 550), fx=0.5, fy=0.5)   # 프레임을 높이, 너비를 각각 절반으로 줄임.
 
         # cv2.cvtcolor(원본 이미지, 색상 변환 코드)를 이용하여 이미지의 색상 공간을 변경
         # 변환코드(code) cv2.COLOR_BGR2GRAY는 출력영상이 GRAY로 변환
@@ -137,16 +139,16 @@ class Sleep_Detector(object):
             cv2.putText(self.image, state_l, tuple(eye_rect_l[0:2]), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
             cv2.putText(self.image, state_r, tuple(eye_rect_r[0:2]), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
 
-            self.get_sleep()
+            self.get_sleep()            # 졸음 감지 알림 함수 호출
 
         # 영상 송출
         ret, jpeg = cv2.imencode('.jpg', self.image)
         return jpeg.tobytes()
 
-    # 졸음감지 여부 반환 함수
+    # 졸음감지 알림 함수
     def get_sleep(self):
         if self.sleepDetection():                       # 졸음감지를 하면
-            tts_s_path = 'data/notification1.mp3'       # 알림 파일 경로
+            tts_s_path = 'data/notification1.mp3'       # 음성 알림 파일
             playsound(tts_s_path)                       # 음성으로 알림
 
 
@@ -154,20 +156,20 @@ class Sleep_Detector(object):
 class Blink_Detector(object):
     # 생성자
     def __init__(self):
-        self.video = cv2.VideoCapture(0)  # 웹캠키기
-        self.success, self.image = self.video.read()  # 프레임 읽어오기
+        self.video = cv2.VideoCapture(0)                # 웹캠 연결
+        self.success, self.image = self.video.read()    # 프레임 읽어오기  success : 연결 성공 여부  image : 프레임 값
 
         # 눈깜빡임 감지 함수 관련변수
-        self.start_blink = time.time()  # 눈깜빡임 횟수 시간측정 변수
-        self.eye_count_min = 0  # 눈깜빡임 횟수 저장변수
-        self.check_blink = False  # 눈감김 여부
+        self.start_blink = time.time()                  # 눈깜빡임 횟수 시간측정 변수
+        self.eye_count_min = 0                          # 눈깜빡임 횟수 저장변수
+        self.check_blink = False                        # 눈감김 여부
 
-        self.pred_r = 0.0  # 오른쪽 눈 예측 값
-        self.pred_l = 0.0  # 왼쪽 눈 예측 값
+        self.pred_r = 0.0                               # 오른쪽 눈 예측 값
+        self.pred_l = 0.0                               # 왼쪽 눈 예측 값
 
     # 소멸자(웹캠 종료)
     def __del__(self):
-        self.video.release()
+        self.video.release()                            # 웹캠 연결 해제
 
     # 매개변수 img 프레임에서 눈을 찾아 눈부분의 image와 좌표를 반환하는 함수
     def crop_eye(self, img, eye_points):
@@ -201,25 +203,25 @@ class Blink_Detector(object):
 
     # 눈동자 깜빡임 횟수 측정 및 경고 여부를 반환하는 함수
     def eyeBlinkDetection(self):
-        if self.check_blink == True and self.pred_l > 0.9 and self.pred_r > 0.9:  # 눈동자가 감겼으면서 양쪽 눈동자를 뜬경우
-            self.eye_count_min += 1  # 눈동자 깜빡임 횟수 변수 1 증가
-            self.check_blink = False  # 눈동자 감김여부 변수를 False로 변경
-        if self.pred_r < 0.1 and self.pred_l < 0.1:  # 양쪽 눈동자가 감겼을때
-            self.check_blink = True  # 눈동자 감김여부 변수를 true로 변경
-        if time.time() - self.start_blink > 10:  # 측정시간이 1분(60초)가 지났을 경우      테스트는 10초로 하는중
-            if self.eye_count_min < 5:  # 눈동자 깜빡임 횟수가 n번(15번) 미만일 경우         테스트는 5회로 하는중
-                self.start_blink = time.time()  # 눈동자 깜빡임 시간 측정 시작
-                self.eye_count_min = 0  # 눈동자 깜빡임 횟수 저장 변수 0으로 초기화
-                return True  # True 반환
-            else:  # 눈동자 깜빡임 횟수가 n번(15번) 이상일 경우
-                self.start_blink = time.time()  # 눈동자 깜빡임 시간 측정 시작
-                self.eye_count_min = 0  # 눈동자 깜빡임 횟수 저장 변수 0으로 초기화
+        if self.check_blink == True and self.pred_l > 0.9 and self.pred_r > 0.9:    # 눈동자가 감겼으면서 양쪽 눈동자를 뜬경우
+            self.eye_count_min += 1                                                 # 눈동자 깜빡임 횟수 변수 1 증가
+            self.check_blink = False                                                # 눈동자 감김여부 변수를 False로 변경
+        if self.pred_r < 0.1 and self.pred_l < 0.1:                                 # 양쪽 눈동자가 감겼을때
+            self.check_blink = True                                                 # 눈동자 감김여부 변수를 True로 변경
+        if time.time() - self.start_blink > 10:                                     # 측정시간이 1분(60초)가 지났을 경우, 테스트는 10초로 하는중
+            if self.eye_count_min < 5:                                              # 눈동자 깜빡임 횟수가 n번(15번) 미만일 경우, 테스트는 5회로 하는중
+                self.start_blink = time.time()                                      # 눈동자 깜빡임 시간 측정 시작
+                self.eye_count_min = 0                                              # 눈동자 깜빡임 횟수 저장 변수 0으로 초기화
+                return True                                                         # True 반환
+            else:                                                                   # 눈동자 깜빡임 횟수가 n번(15번) 이상일 경우
+                self.start_blink = time.time()                                      # 눈동자 깜빡임 시간 측정 시작
+                self.eye_count_min = 0                                              # 눈동자 깜빡임 횟수 저장 변수 0으로 초기화
 
     # 웹캠 영상 연결 및 프레임 읽기
     # 프레임에 대한 딥러닝 모델 예측
     def get_frame(self):
-        self.success, self.image = self.video.read()  # 프레임 읽어오기
-        self.image = cv2.resize(self.image, dsize=(650, 550), fx=0.5, fy=0.5)  # 프레임을 높이, 너비를 각각 절반으로 줄임.
+        self.success, self.image = self.video.read()                            # 프레임 읽어오기
+        self.image = cv2.resize(self.image, dsize=(650, 550), fx=0.5, fy=0.5)   # 프레임을 높이, 너비를 각각 절반으로 줄임.
 
         # cv2.cvtcolor(원본 이미지, 색상 변환 코드)를 이용하여 이미지의 색상 공간을 변경
         # 변환코드(code) cv2.COLOR_BGR2GRAY는 출력영상이 GRAY로 변환
@@ -258,7 +260,7 @@ class Blink_Detector(object):
             self.pred_l = model.predict(eye_input_l)
             self.pred_r = model.predict(eye_input_r)
 
-            self.blink_count()              # 눈동자 깜빡임 감지
+            self.blink_count()              # 눈동자 깜빡임 횟수 부족 알림 함수 호출
 
             # visualize
             # 모델출력값이 0이라면 '_ 0.0'으로, 그 외의 숫자라면 '0 0.3'형식으로 문자열 반환하는 문자열을 정의
@@ -297,8 +299,8 @@ class Blink_Detector(object):
         ret, jpeg = cv2.imencode('.jpg', self.image)
         return jpeg.tobytes()
 
-    # 눈동자 깜빡임 횟수 부족 여부 반환 함수
+    # 눈동자 깜빡임 횟수 부족 알림 함수
     def blink_count(self):
-        if self.eyeBlinkDetection():                # 눈동자 깜빡임의 횟수가 적으면
-            tts_b_path = 'data/notification2.mp3'   # 알림 음성 파일 경로
-            #playsound(tts_b_path)                   # 음성으로 알림
+        if self.eyeBlinkDetection():                    # 눈동자 깜빡임의 횟수가 적으면
+            tts_b_path = 'data/notification2.mp3'       # 알림 음성 파일
+            playsound(tts_b_path)                       # 음성으로 알림
