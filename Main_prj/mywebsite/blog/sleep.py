@@ -7,7 +7,7 @@ from playsound import playsound
 
 IMG_SIZE = (34, 26)                                                                 # 눈동자 이미지 사이즈 변수
 detector = dlib.get_frontal_face_detector()                                         # 정면 얼굴 감지기 로드
-model = load_model(os.path.join(settings.BASE_DIR, 'data/2018_12_17_22_58_35.h5'))  # 눈동자 깜빡임 감지 모델 로드
+model = load_model(os.path.join(settings.BASE_DIR, 'data/detection_model.h5'))  # 눈동자 깜빡임 감지 모델 로드
 predictor = dlib.shape_predictor('data/shape_predictor_68_face_landmarks.dat')      # 얼굴 랜드마크 좌표값 반환 함수
 
 
@@ -148,7 +148,7 @@ class Sleep_Detector(object):
     # 졸음감지 알림 함수
     def get_sleep(self):
         if self.sleepDetection():                       # 졸음감지를 하면
-            tts_s_path = 'data/notification1.mp3'       # 음성 알림 파일
+            tts_s_path = 'data/sleep_notification.mp3'       # 음성 알림 파일
             playsound(tts_s_path)                       # 음성으로 알림
 
 
@@ -302,7 +302,7 @@ class Blink_Detector(object):
     # 눈동자 깜빡임 횟수 부족 알림 함수
     def blink_count(self):
         if self.eyeBlinkDetection():                    # 눈동자 깜빡임의 횟수가 적으면
-            tts_b_path = 'data/notification2.mp3'       # 알림 음성 파일
+            tts_b_path = 'data/blink_notification.mp3'       # 알림 음성 파일
             playsound(tts_b_path)                       # 음성으로 알림
 #210314
 class sleep_Blink_Detector(object):
@@ -474,11 +474,11 @@ class sleep_Blink_Detector(object):
     # 눈동자 깜빡임 횟수 부족 알림 함수
     def blink_count(self):
         if self.eyeBlinkDetection():                    # 눈동자 깜빡임의 횟수가 적으면
-            tts_b_path = 'data/notification2.mp3'       # 알림 음성 파일
+            tts_b_path = 'data/blink_notification.mp3'       # 알림 음성 파일
             playsound(tts_b_path)                       # 음성으로 알림
 
     # 졸음감지 알림 함수
     def get_sleep(self):
         if self.sleepDetection():  # 졸음감지를 하면
-            tts_s_path = 'data/notification1.mp3'  # 음성 알림 파일
+            tts_s_path = 'data/sleep_notification.mp3'  # 음성 알림 파일
             playsound(tts_s_path)  # 음성으로 알림
