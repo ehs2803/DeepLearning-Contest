@@ -1,0 +1,12 @@
+21_03_12 YoungDo, Ji Sang
+
+-Main page
+좌측상단 Dont sleep -> Task Manager로 수정
+우측상단 메뉴를 Home, About, Mypage로 수정
+중단 통합기능 설명 수정
+하단 기능1, 기능2, 기능3 -> 졸음감지, 눈깜박임횟수층정, 기능3수정
+하단 copyright 수정
+
+-About page 개발에대한 내용 추가및 수정
+
+
