@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http.response import StreamingHttpResponse
 from blog.sleep import Sleep_Detector
 from blog.sleep import Blink_Detector
+from blog.sleep import sleep_Blink_Detector
 
 
 # Create your views here.
@@ -17,6 +18,13 @@ def about(req):
 
     }
     return render(req, "about.html", context=context)
+
+
+def Task_Manager(req):
+    context = {
+
+    }
+    return render(req, "TaskManager.html", context=context)
 
 
 def Drowsiness(req):
@@ -40,11 +48,16 @@ def gen(camera):
                b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
 
 
-def video_feed1(request):
+def task_manager(request):
+    return StreamingHttpResponse(gen(sleep_Blink_Detector()),
+                                 content_type='multipart/x-mixed-replace; boundary=frame')
+
+
+def sleep_detector(request):
     return StreamingHttpResponse(gen(Sleep_Detector()),
                                  content_type='multipart/x-mixed-replace; boundary=frame')
 
 
-def video_feed2(request):
+def blink_detector(request):
     return StreamingHttpResponse(gen(Blink_Detector()),
                                  content_type='multipart/x-mixed-replace; boundary=frame')
