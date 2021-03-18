@@ -1,4 +1,4 @@
-21_03_12 YoungDo, Ji Sang
+# 21_03_12 YoungDo, Ji Sang
 
 -Main page
 좌측상단 Dont sleep -> Task Manager로 수정
@@ -10,3 +10,16 @@
 -About page 개발에대한 내용 추가및 수정
 
 
+# 21.03.18 영환, 수지
+Drowsiness.html
+Blinking.html
+TaskManager.html
+95~112 번째 라인 : 스톱워치 코드
+118 ~ 132 번째 라인 : 시계 코드
+
+134 라인 clock.css 파일 연결
+136,137 라인 stopwatch.js 파일 연결
+
+static 폴더 내의 css 폴더에 clock.css, clock.js, stopwatch.js 파일 추가.
+
+- 결론 : 페이지별 스톱워치, 시계 기능 추가 완료

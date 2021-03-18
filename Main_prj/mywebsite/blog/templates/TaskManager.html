@@ -92,6 +92,49 @@
   </div>
 
 
+  <div>
+    <div>
+      <span id="postTestMin">00</span><!-- 분 -->
+      <span>:</span>
+      <span id="postTestSec">00</span><!--초-->
+      <span>.</span>
+      <span id="postTestMilisec">00</span><!--밀리초-->
+    </div>
+
+    <div>
+      <ul id="testRecordList"></ul><!--중간 기록할 리스트-->
+    </div>
+
+    <div>
+      <button type="button" id="testStartBtn">START</button><!--시작/재시작/기록 버튼-->
+      <button type="button" id="testStopBtn">STOP</button><!--스톱 버튼-->
+    </div>
+  </div>
+
+
+  <div class="clock">
+    <div class="time_box">
+      <span class="txt_lg" id="hours"></span>
+      <span class="mark">:</span>
+      <span class="txt_lg" id="min"></span>
+      <span class="mark02">.</span>
+      <span class="txt_sm" id="sec"></span>
+    </div>
+
+    <div class="date_box">
+      <span id="month"></span>
+      <span class="point">.</span>
+      <span id="date"></span>
+      <span class="point">.</span>
+      <span id="year"></span>
+      <span id="day"></span>
+    </div>
+  </div>
+
+  <link rel="stylesheet" href="{% static 'css/clock.css' %}">
+
+  <script src="{% static 'css/clock.js' %}"></script>
+  <script src="{% static 'css/stopwatch.js' %}"></script>
 
 </body>
 
