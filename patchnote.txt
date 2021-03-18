@@ -18,7 +18,7 @@ TaskManager.html
 118 ~ 132 번째 라인 : 시계 코드
 
 134 라인 clock.css 파일 연결
-136,137 라인 stopwatch.js 파일 연결
+136,137 라인 clock.js, stopwatch.js 파일 연결
 
 static 폴더 내의 css 폴더에 clock.css, clock.js, stopwatch.js 파일 추가.
 
