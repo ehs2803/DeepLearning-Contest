@@ -66,7 +66,7 @@ class Sleep_Detector(object):
     def sleepDetection(self):
         if self.pred_r < 0.1 and self.pred_l < 0.1:                 # 두 눈이 감겼을 때
             if self.check_sleep == True:                            # 졸음이 감지된 적이 있는 경우
-                if time.time() - self.start_sleep > 4:              # 4초가 지났을 경우
+                if time.time() - self.start_sleep > 2:              # 2초가 지났을 경우
                     self.start_sleep = time.time()                  # 시간측정 시작
                     self.check_sleep = False                        # 졸음 감지 변수 False 로 변경
                     return True                                     # 졸음이 감지된 상황 -> True 반환
@@ -147,9 +147,9 @@ class Sleep_Detector(object):
 
     # 졸음감지 알림 함수
     def get_sleep(self):
-        if self.sleepDetection():                       # 졸음감지를 하면
-            tts_s_path = 'data/sleep_notification.mp3'       # 음성 알림 파일
-            playsound(tts_s_path)                       # 음성으로 알림
+        if self.sleepDetection():                           # 졸음감지를 하면
+            tts_s_path = 'data/sleep_notification.mp3'      # 음성 알림 파일
+            playsound(tts_s_path)                           # 음성으로 알림
 
 
 # Blink_Detector 클래스
@@ -208,12 +208,10 @@ class Blink_Detector(object):
             self.check_blink = False                                                # 눈동자 감김여부 변수를 False로 변경
         if self.pred_r < 0.1 and self.pred_l < 0.1:                                 # 양쪽 눈동자가 감겼을때
             self.check_blink = True                                                 # 눈동자 감김여부 변수를 True로 변경
-        if time.time() - self.start_blink > 10:                                     # 측정시간이 1분(60초)가 지났을 경우, 테스트는 10초로 하는중
-            if self.eye_count_min < 5:                                              # 눈동자 깜빡임 횟수가 n번(15번) 미만일 경우, 테스트는 5회로 하는중
-                self.start_blink = time.time()                                      # 눈동자 깜빡임 시간 측정 시작
-                self.eye_count_min = 0                                              # 눈동자 깜빡임 횟수 저장 변수 0으로 초기화
+        if time.time() - self.start_blink > 60:                                     # 측정시간이 1분(60초)가 지났을 경우
+            if self.eye_count_min < 15:                                             # 눈동자 깜빡임 횟수가 15번 미만일 경우
                 return True                                                         # True 반환
-            else:                                                                   # 눈동자 깜빡임 횟수가 n번(15번) 이상일 경우
+            else:                                                                   # 눈동자 깜빡임 횟수가 15번 이상일 경우
                 self.start_blink = time.time()                                      # 눈동자 깜빡임 시간 측정 시작
                 self.eye_count_min = 0                                              # 눈동자 깜빡임 횟수 저장 변수 0으로 초기화
 
@@ -301,10 +299,13 @@ class Blink_Detector(object):
 
     # 눈동자 깜빡임 횟수 부족 알림 함수
     def blink_count(self):
-        if self.eyeBlinkDetection():                    # 눈동자 깜빡임의 횟수가 적으면
-            tts_b_path = 'data/blink_notification.mp3'       # 알림 음성 파일
-            playsound(tts_b_path)                       # 음성으로 알림
-#210314
+        if self.eyeBlinkDetection():                                     # 눈동자 깜빡임의 횟수가 적으면
+            tts_b_path = 'data/' + str(self.eye_count_min) + '.mp3'      # 알림 음성 파일
+            playsound(tts_b_path)                                        # 음성으로 알림
+            self.start_blink = time.time()                               # 눈동자 깜빡임 시간 측정 시작
+            self.eye_count_min = 0                                       # 눈동자 깜빡임 횟수 저장 변수 0으로 초기화
+
+# sleep_Blink_Detector 클래스 (통합 기능)
 class sleep_Blink_Detector(object):
     # 생성자
     def __init__(self):
@@ -362,7 +363,7 @@ class sleep_Blink_Detector(object):
     def sleepDetection(self):
         if self.pred_r < 0.1 and self.pred_l < 0.1:                 # 두 눈이 감겼을 때
             if self.check_sleep == True:                            # 졸음이 감지된 적이 있는 경우
-                if time.time() - self.start_sleep > 4:              # 4초가 지났을 경우
+                if time.time() - self.start_sleep > 2:              # 2초가 지났을 경우
                     self.start_sleep = time.time()                  # 시간측정 시작
                     self.check_sleep = False                        # 졸음 감지 변수 False 로 변경
                     return True                                     # 졸음이 감지된 상황 -> True 반환
@@ -379,12 +380,10 @@ class sleep_Blink_Detector(object):
             self.check_blink = False                                                # 눈동자 감김여부 변수를 False로 변경
         if self.pred_r < 0.1 and self.pred_l < 0.1:                                 # 양쪽 눈동자가 감겼을때
             self.check_blink = True                                                 # 눈동자 감김여부 변수를 True로 변경
-        if time.time() - self.start_blink > 10:                                     # 측정시간이 1분(60초)가 지났을 경우, 테스트는 10초로 하는중
-            if self.eye_count_min < 5:                                              # 눈동자 깜빡임 횟수가 n번(15번) 미만일 경우, 테스트는 5회로 하는중
-                self.start_blink = time.time()                                      # 눈동자 깜빡임 시간 측정 시작
-                self.eye_count_min = 0                                              # 눈동자 깜빡임 횟수 저장 변수 0으로 초기화
+        if time.time() - self.start_blink > 60:                                     # 측정시간이 1분(60초)가 지났을 경우
+            if self.eye_count_min < 15:                                             # 눈동자 깜빡임 횟수가 15번 미만일 경우
                 return True                                                         # True 반환
-            else:                                                                   # 눈동자 깜빡임 횟수가 n번(15번) 이상일 경우
+            else:                                                                   # 눈동자 깜빡임 횟수가 15번 이상일 경우
                 self.start_blink = time.time()                                      # 눈동자 깜빡임 시간 측정 시작
                 self.eye_count_min = 0                                              # 눈동자 깜빡임 횟수 저장 변수 0으로 초기화
 
@@ -431,8 +430,8 @@ class sleep_Blink_Detector(object):
             self.pred_l = model.predict(eye_input_l)
             self.pred_r = model.predict(eye_input_r)
 
-            self.blink_count()              # 눈동자 깜빡임 횟수 부족 알림 함수 호출
-            self.get_sleep()
+            self.blink_count()              # 눈동자 깜빡임 횟수 부족 감지 함수 호출
+            self.get_sleep()                # 졸음 감지 함수 호출
 
             # visualize
             # 모델출력값이 0이라면 '_ 0.0'으로, 그 외의 숫자라면 '0 0.3'형식으로 문자열 반환하는 문자열을 정의
@@ -473,12 +472,14 @@ class sleep_Blink_Detector(object):
 
     # 눈동자 깜빡임 횟수 부족 알림 함수
     def blink_count(self):
-        if self.eyeBlinkDetection():                    # 눈동자 깜빡임의 횟수가 적으면
-            tts_b_path = 'data/blink_notification.mp3'       # 알림 음성 파일
-            playsound(tts_b_path)                       # 음성으로 알림
+        if self.eyeBlinkDetection():                                     # 눈동자 깜빡임의 횟수가 적으면
+            tts_b_path = 'data/' + str(self.eye_count_min) + '.mp3'      # 알림 음성 파일
+            playsound(tts_b_path)                                        # 음성으로 알림
+            self.start_blink = time.time()                               # 눈동자 깜빡임 시간 측정 시작
+            self.eye_count_min = 0                                       # 눈동자 깜빡임 횟수 저장 변수 0으로 초기화
 
     # 졸음감지 알림 함수
     def get_sleep(self):
-        if self.sleepDetection():  # 졸음감지를 하면
-            tts_s_path = 'data/sleep_notification.mp3'  # 음성 알림 파일
-            playsound(tts_s_path)  # 음성으로 알림
+        if self.sleepDetection():                           # 졸음감지를 하면
+            tts_s_path = 'data/sleep_notification.mp3'      # 음성 알림 파일
+            playsound(tts_s_path)                           # 음성으로 알림
