@@ -300,7 +300,7 @@ class Blink_Detector(object):
     # 눈동자 깜빡임 횟수 부족 알림 함수
     def blink_count(self):
         if self.eyeBlinkDetection():                                     # 눈동자 깜빡임의 횟수가 적으면
-            tts_b_path = 'data/' + str(self.eye_count_min) + '.mp3'      # 알림 음성 파일
+            tts_b_path = 'data/blink_count' + str(self.eye_count_min) + '.mp3'      # 알림 음성 파일
             playsound(tts_b_path)                                        # 음성으로 알림
             self.start_blink = time.time()                               # 눈동자 깜빡임 시간 측정 시작
             self.eye_count_min = 0                                       # 눈동자 깜빡임 횟수 저장 변수 0으로 초기화
@@ -473,7 +473,7 @@ class sleep_Blink_Detector(object):
     # 눈동자 깜빡임 횟수 부족 알림 함수
     def blink_count(self):
         if self.eyeBlinkDetection():  # 눈동자 깜빡임의 횟수가 적으면
-            tts_b_path = 'data/' + 'blink_count' + str(self.eye_count_min) + '.mp3'  # 알림 음성 파일
+            tts_b_path = 'data/blink_count' + str(self.eye_count_min) + '.mp3'  # 알림 음성 파일
             playsound(tts_b_path)  # 음성으로 알림
             self.start_blink = time.time()  # 눈동자 깜빡임 시간 측정 시작
             self.eye_count_min = 0  # 눈동자 깜빡임 횟수 저장 변수 0으로 초기화
