@@ -20,32 +20,73 @@
 
   <style>
     .all{
+      background : #fab4b4;
       margin : 30px;
-      height : 600px;
+      height : 800px;
     }
     .stw{
       position : absolute;
-      width : 200px;
-	  height : 70px;
-	  left : 750px;
-	  top : 400px;
+      width : 350px;
+	  height : 150px;
+	  left : 820px;
+	  top : 450px;
     }
 	.cam{
 	   position : absolute;
 	   width : 650px;
 	   height : 550px;
+	   top : 120px;
+	   left : 70px;
+	}
+	.warn{
+	  position : absolute;
+	  width : 500px;
+	  height : 130px;
+	  top : 700px;
+	  left : 80px;
 	}
 	.clock{
 	   position : absolute;
 	   width : 300px;
 	   height : 300px;
-	   left : 700px;
+	   top : 120px;
+	   left : 810px;
 	}
+	.scheduler{
+	   position : absolute;
+	   width : 500px;
+	   height : 500px;
+	   top : 120px;
+	   left : 1200px;
+	}
+    input[type="text, time"] {
+	   width:370px;
+	   float:left;
+	   height:30px;
+	   padding-left:30px;
+    }
+    button {
+	   width:90px;
+	   height:30px;
+	   margin-left: 30px;
+	   background:#222;
+	   color:#fff;
+	   border:none;
+    }
+    .clock { width: 300px; height: 300px; margin: auto; padding-top: 75px; background: grey; text-align: center; }
+    .clock .time_box { width: 100%; padding-left: 10px; }
+    .clock span { color: #fff; }
+    .txt_lg { font-size: 75px; }
+    .txt_sm { font-size: 20px; }
+    .date_box { font-size: 15px; }
+    #day { display: block; margin-top: 5px; }
+    .mark { background: grey; display: inline-block; vertical-align: top; height: 100px; margin-left: 1px; line-height: 94px; font-size: 55px; }
+    .mark02 { display: inline-block; margin-left: -3px; }
   </style>
 </head>
 
 
-<body style="background-color:#fcfcfc">
+<body style="background-color:#ffdbdb">
   <!-- Navigation -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
     <div class="container">
@@ -82,6 +123,7 @@
 
   <div class="stw">
     <div>
+      <h2>Stop watch</h2>
       <span id="postTestMin">00</span><!-- 분 -->
       <span>:</span>
       <span id="postTestSec">00</span><!--초-->
@@ -118,12 +160,58 @@
     </div>
   </div>
 
+  <div class="scheduler">
+    <h1>Web Programming</h1>
+    <p>공부할 주제를 기록해 보세요</p>
+    <p>공부가 끝난 것은 클릭해서 삭제할 수 있습니다.</p>
+    <form action="">
+        <input type="text" id="subject" autofocus>
+        <input type="time" id="t">
+        <button onclick="newRegister(); return false;">추가</button>
+    </form>
+    <hr>
+    <ul id="itemList"> </ul>
+  </div>
+
+  <div class="warn">
+    <p>※ 올바른 사용방법 ※</p>
+    <p>ㆍ정확한 인식을위해 카메라각도를 얼굴 정면을 향하도록 하세요</p>
+    <p>ㆍ주변 밝기가 너무 어두우면 인식의 어려움이 있을 수 있습니다</p>
+  </div>
+
 </div>
 
-  <link rel="stylesheet" href="{% static 'css/clock.css' %}">
+  <!--<link rel="stylesheet" href="{% static 'css/clock.css' %}">-->
 
   <script src="{% static 'css/clock.js' %}"></script>
   <script src="{% static 'css/stopwatch.js' %}"></script>
+  <script>
+    function newRegister() {
+      var newItem = document.createElement("li");  // 요소 노드 추가
+      var subject = document.querySelector("#subject");  // 폼의 텍스트 필드
+      var newText = document.createTextNode(subject.value);  // 텍스트 필드의 값을 텍스트 노드로 만들기
+      newItem.appendChild(newText);  // 텍스트 노드를 요소 노드의 자식 노드로 추가
+
+      var t1=document.createElement("li");
+      var t2=document.querySelector("#t");
+      var t3=document.createTextNode(t2.value);
+      newItem.appendChild(t3);  // 텍스트 노드를 요소 노드의 자식 노드로 추가
+
+      var itemList = document.querySelector("#itemList");  // 웹 문서에서 부모 노드 가져오기
+      itemList.insertBefore(newItem, itemList.childNodes[itemList.length]);  // 자식 노드중 첫번째 노드 앞에 추가
+
+      subject.value="";
+      t.value="";
+
+      var items = document.querySelectorAll("li");  // 모든 항목 가져오기
+      for(i=0; i<items.length; i++) {
+        items[i].addEventListener("click", function() {  // 항목 클릭했을 때 실행할 함수
+          if(this.parentNode)    // 부모 노드가 있다면
+            this.parentNode.removeChild(this);  // 부모 노드에서 삭제
+        });
+      }
+    }
+	</script>
 
 </body>
 
