@@ -23,3 +23,11 @@ TaskManager.html
 static 폴더 내의 css 폴더에 clock.css, clock.js, stopwatch.js 파일 추가.
 
 - 결론 : 페이지별 스톱워치, 시계 기능 추가 완료
+
+
+#21.03.23 지상,영도
+
+Drowsiness.html
+Blinking.html
+TaskManager.html
+시계, 스톱워치, 스케줄러 틀에맞게 인터페이스 수정

@@ -20,32 +20,44 @@
 
   <style>
     .all{
+      background : #fab4b4;
       margin : 30px;
-      height : 600px;
+      height : 800px;
     }
     .stw{
       position : absolute;
-      width : 200px;
-	  height : 70px;
-	  left : 750px;
-	  top : 400px;
+      width : 350px;
+	  height : 150px;
+	  left : 820px;
+	  top : 450px;
     }
 	.cam{
 	   position : absolute;
 	   width : 650px;
 	   height : 550px;
+	   top : 120px;
+	   left : 70px;
+	}
+	.warn{
+	  position : absolute;
+	  width : 500px;
+	  height : 130px;
+	  top : 700px;
+	  left : 80px;
 	}
 	.clock{
 	   position : absolute;
 	   width : 300px;
 	   height : 300px;
-	   left : 700px;
+	   top : 120px;
+	   left : 810px;
 	}
 	.scheduler{
 	   position : absolute;
 	   width : 500px;
 	   height : 500px;
-	   left : 1100px;
+	   top : 120px;
+	   left : 1200px;
 	}
     input[type="text, time"] {
 	   width:370px;
@@ -74,7 +86,7 @@
 </head>
 
 
-<body style="background-color:#fcfcf">
+<body style="background-color:#ffdbdb">
   <!-- Navigation -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
     <div class="container">
@@ -104,7 +116,6 @@
   </nav>
 
 <div class="all">
-
   <div class="cam">
   <img src="{% url 'task_manager' %}">
   </div>
@@ -149,7 +160,7 @@
   </div>
 
   <div class="scheduler">
-    <h1>Web Programming</h1>
+    <h1>Scheduler</h1>
     <p>공부할 주제를 기록해 보세요</p>
     <p>공부가 끝난 것은 클릭해서 삭제할 수 있습니다.</p>
     <form action="">
@@ -159,6 +170,12 @@
     </form>
     <hr>
     <ul id="itemList"> </ul>
+  </div>
+
+  <div class="warn">
+    <p>※ 올바른 사용방법 ※</p>
+    <p>ㆍ정확한 인식을위해 카메라각도를 얼굴 정면을 향하도록 하세요</p>
+    <p>ㆍ주변 밝기가 너무 어두우면 인식의 어려움이 있을 수 있습니다</p>
   </div>
 
 </div>
