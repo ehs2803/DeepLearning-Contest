@@ -1,0 +1,20 @@
+21/06/21
+<프로젝트 폴더 변경 사항>
+- data 디렉토리
+  추가 모델 data 폴더에 추가
+
+<sleep.py 변경 사항>
+model 변수 -> blink_model 로 이름 변경
+front_top_model 변수 추가 (추가 모델)
+
+- Sleep_Detector 클래스
+  front_top_detection() 함수 추가
+  get_sleep에서 사용
+ 
+- Blink_Detector 클래스
+  blink_count() 함수 count_detector()로 변경
+  front_top_detection() 함수 추가
+
+- sleep_Blink_Detector 클래스
+  front_top_detection() 함수 추가
+  get_sleep에서 사용
