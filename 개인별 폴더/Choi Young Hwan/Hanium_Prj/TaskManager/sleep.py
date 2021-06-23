@@ -8,7 +8,7 @@ from playsound import playsound
 IMG_SIZE = (34, 26)                                                                                 # 눈동자 이미지 사이즈 변수
 detector = dlib.get_frontal_face_detector()                                                         # 정면 얼굴 감지기 로드
 blink_model = load_model(os.path.join(settings.BASE_DIR, 'data/detection_model.h5'))                # 눈동자 깜빡임 감지 모델 로드
-front_top_model = load_model(os.path.join(settings.BASE_DIR), 'data/front_and_top_2021_06_21.h5')   # 정면, 정수리 분류 모델 로드
+front_top_model = load_model(os.path.join(settings.BASE_DIR, 'data/front_and_top_2021_06_23.h5'))   # 정면, 정수리 분류 모델 로드
 predictor = dlib.shape_predictor('data/shape_predictor_68_face_landmarks.dat')                      # 얼굴 랜드마크 좌표값 반환 함수
 
 
@@ -80,7 +80,7 @@ class Sleep_Detector(object):
     # 정면 정수리 이중 분류 모델 기반 졸음 감지 함수
     # 졸음이 감지되면 True를 반환
     def front_top_detection(self):
-        pred = front_top_model.predict(self.image)
+        pred = front_top_model.predict(self.image)                  # 모델 예측값
         if pred == 0:                                               # 고개를 숙였을 때
             if self.check_sleep:                                    # 졸음이 감지된 적이 있는 경우
                 if time.time() == self.start_sleep > 2:             # 2초가 지났을 경우
