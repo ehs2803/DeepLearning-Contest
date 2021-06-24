@@ -8,7 +8,7 @@ from playsound import playsound
 IMG_SIZE = (34, 26)                                                                                 # 눈동자 이미지 사이즈 변수
 detector = dlib.get_frontal_face_detector()                                                         # 정면 얼굴 감지기 로드
 blink_model = load_model(os.path.join(settings.BASE_DIR, 'data/detection_model.h5'))                # 눈동자 깜빡임 감지 모델 로드
-front_top_model = load_model(os.path.join(settings.BASE_DIR, 'data/front_and_top_2021_06_23.h5'))   # 정면, 정수리 분류 모델 로드
+front_top_model = load_model(os.path.join(settings.BASE_DIR, 'data/front_and_top_2021_06_24.h5'))   # 정면, 정수리 분류 모델 로드
 predictor = dlib.shape_predictor('data/shape_predictor_68_face_landmarks.dat')                      # 얼굴 랜드마크 좌표값 반환 함수
 
 
@@ -18,6 +18,7 @@ class Sleep_Detector(object):
     def __init__(self):
         self.video = cv2.VideoCapture(0)                # 웹캠 연결
         self.success, self.image = self.video.read()    # 프레임 읽어오기 success : 연결 성공 여부   image : 프레임 값
+        self.frame = self.image                         # 정면/정수리 모델 입력용 프레임 변수
 
         # 졸음감지 함수 관련변수
         self.start_sleep = 0                            # 졸음감지 시간측정변수
@@ -77,13 +78,13 @@ class Sleep_Detector(object):
         else:                                                       # 두 눈을 감지 않았을 때
             self.check_sleep = False                                # 졸음 감지 변수를 False 로 변경
             
-    # 정면 정수리 이중 분류 모델 기반 졸음 감지 함수
+    # 정면/정수리 이중 분류 모델 기반 졸음 감지 함수
     # 졸음이 감지되면 True를 반환
     def front_top_detection(self):
-        pred = front_top_model.predict(self.image)                  # 모델 예측값
-        if pred == 0:                                               # 고개를 숙였을 때
+        pred = front_top_model.predict(self.frame)          # 모델 예측값
+        if pred > 0.5:                                              # 고개를 숙였을 때
             if self.check_sleep:                                    # 졸음이 감지된 적이 있는 경우
-                if time.time() == self.start_sleep > 2:             # 2초가 지났을 경우
+                if time.time() == self.start_sleep > 3:             # 2초가 지났을 경우
                     self.start_sleep = time.time()                  # 시간 측정 시작
                     self.check_sleep = False                        # 졸음 감지 변수 False로 변경
                     return True                                     # 졸음이 감지된 상황 -> True 반환
@@ -98,6 +99,8 @@ class Sleep_Detector(object):
     def get_frame(self):
         self.success, self.image = self.video.read()                            # 프레임 읽어오기
         self.image = cv2.resize(self.image, dsize=(650, 550), fx=0.5, fy=0.5)   # 프레임을 높이, 너비를 각각 절반으로 줄임.
+        self.frame = cv2.resize(self.image, dsize=(150, 150))
+        self.frame = np.expand_dims(self.frame, axis=0)
 
         # cv2.cvtcolor(원본 이미지, 색상 변환 코드)를 이용하여 이미지의 색상 공간을 변경
         # 변환코드(code) cv2.COLOR_BGR2GRAY는 출력영상이 GRAY로 변환
@@ -164,10 +167,13 @@ class Sleep_Detector(object):
 
     # 졸음감지 알림 함수
     def get_sleep(self):
-        if self.sleepDetection() or self.front_top_detection():     # 졸음감지를 하면
+        if self.sleepDetection():                                   # 졸음감지를 하면
             tts_s_path = 'data/sleep_notification.mp3'              # 음성 알림 파일
             playsound(tts_s_path)                                   # 음성으로 알림
 
+        if self.front_top_detection():                              # 정수리 감지 시
+            tts_s_path = 'data/sleep_notification.mp3'              # 음성 알림 파일
+            playsound(tts_s_path)                                   # 음성으로 알림
 
 # Blink_Detector 클래스
 class Blink_Detector(object):
