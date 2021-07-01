@@ -73,6 +73,16 @@
 	   color:#fff;
 	   border:none;
     }
+    .tempclass{
+      margin: 5px;
+      padding: 5px;
+      border: 2px solid black;
+      border-radius: 25px;
+      font: 80px;
+    }
+    .lsclass{
+      height: 50px;
+    }
     .clock { width: 300px; height: 300px; margin: auto; padding-top: 75px; background: grey; text-align: center; }
     .clock .time_box { width: 100%; padding-left: 10px; }
     .clock span { color: #fff; }
@@ -165,7 +175,7 @@
     <p>공부가 끝난 것은 클릭해서 삭제할 수 있습니다.</p>
     <form action="">
         <input type="text" id="subject" autofocus>
-        <input type="time" id="t">
+        <input type="time" id="time">
         <button onclick="newRegister(); return false;">추가</button>
     </form>
     <hr>
@@ -187,30 +197,43 @@
   <script>
     function newRegister() {
       var newItem = document.createElement("li");  // 요소 노드 추가
-      var subject = document.querySelector("#subject");  // 폼의 텍스트 필드
-      var newText = document.createTextNode(subject.value);  // 텍스트 필드의 값을 텍스트 노드로 만들기
-      newItem.appendChild(newText);  // 텍스트 노드를 요소 노드의 자식 노드로 추가
+      newItem.className='lsclass';
 
-      var t1=document.createElement("li");
-      var t2=document.querySelector("#t");
-      var t3=document.createTextNode(t2.value);
-      newItem.appendChild(t3);  // 텍스트 노드를 요소 노드의 자식 노드로 추가
+      var subject = document.querySelector("#subject");  // 폼의 텍스트 필드
+      var newText = document.createTextNode(subject.value);// 텍스트 필드의 값을 텍스트 노드로 만들기
+      if(subject.value=="") return;
+      var newp_content = document.createElement("span");
+      newp_content.appendChild(newText);
+      newp_content.className = 'tempclass';
+
+      var subjecttime=document.querySelector("#time");
+      var newtime=document.createTextNode(subjecttime.value);
+      if(subjecttime.value=="") return;
+      var newp_time = document.createElement("span");
+      newp_time.appendChild(newtime);
+      newp_time.className = 'tempclass';
+
+      var newButton = document.createElement("button");  // 요소 노드 추가
+      var jbBtnText = document.createTextNode( '할일 완료' );
+      newButton.appendChild(jbBtnText);
+
+      newItem.appendChild(newp_content);  // 텍스트 노드를 요소 노드의 자식 노드로 추가
+      newItem.appendChild(newp_time);  // 텍스트 노드를 요소 노드의 자식 노드로 추가
+      newItem.appendChild(newButton);
 
       var itemList = document.querySelector("#itemList");  // 웹 문서에서 부모 노드 가져오기
-      itemList.insertBefore(newItem, itemList.childNodes[itemList.length]);  // 자식 노드중 첫번째 노드 앞에 추가
 
-      subject.value="";
-      t.value="";
+      itemList.insertBefore(newItem, itemList.childNodes[0]);  // 자식 노드중 첫번째 노드 앞에 추가
 
       var items = document.querySelectorAll("li");  // 모든 항목 가져오기
       for(i=0; i<items.length; i++) {
-        items[i].addEventListener("click", function() {  // 항목 클릭했을 때 실행할 함수
+        items[i].lastChild.addEventListener("click", function() {  // 항목 클릭했을 때 실행할 함수
           if(this.parentNode)    // 부모 노드가 있다면
-            this.parentNode.removeChild(this);  // 부모 노드에서 삭제
+            this.parentNode.remove(this);  // 부모 노드에서 삭제
         });
       }
     }
-	</script>
+  </script>
 
 </body>
 
