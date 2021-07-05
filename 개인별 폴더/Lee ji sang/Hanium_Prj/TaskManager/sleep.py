@@ -5,12 +5,11 @@ from django.conf import settings
 from imutils import face_utils
 from playsound import playsound
 
-IMG_SIZE = (34, 26)                                                                                 # 눈동자 이미지 사이즈 변수
-detector = dlib.get_frontal_face_detector()                                                         # 정면 얼굴 감지기 로드
-blink_model = load_model(os.path.join(settings.BASE_DIR, 'data/detection_model.h5'))                # 눈동자 깜빡임 감지 모델 로드
-front_top_model = load_model(os.path.join(settings.BASE_DIR, 'data/front_and_top_2021_06_24.h5'))   # 정면, 정수리 분류 모델 로드
-predictor = dlib.shape_predictor('data/shape_predictor_68_face_landmarks.dat')                      # 얼굴 랜드마크 좌표값 반환 함수
-
+IMG_SIZE = (34, 26)                                                                 # 눈동자 이미지 사이즈 변수
+detector = dlib.get_frontal_face_detector()                                         # 정면 얼굴 감지기 로드
+model = load_model(os.path.join(settings.BASE_DIR, 'data/detection_model.h5'))  # 눈동자 깜빡임 감지 모델 로드
+predictor = dlib.shape_predictor('data/shape_predictor_68_face_landmarks.dat')      # 얼굴 랜드마크 좌표값 반환 함수
+model2 = load_model(os.path.join(settings.BASE_DIR, 'data/Front_and_Top_2021_07_02.h5'))
 
 # Sleep_Detector 클래스
 class Sleep_Detector(object):
@@ -18,7 +17,6 @@ class Sleep_Detector(object):
     def __init__(self):
         self.video = cv2.VideoCapture(0)                # 웹캠 연결
         self.success, self.image = self.video.read()    # 프레임 읽어오기 success : 연결 성공 여부   image : 프레임 값
-        self.frame = self.image                         # 정면/정수리 모델 입력용 프레임 변수
 
         # 졸음감지 함수 관련변수
         self.start_sleep = 0                            # 졸음감지 시간측정변수
@@ -27,6 +25,10 @@ class Sleep_Detector(object):
         # 딥러닝 모델 예측 값 관련 변수
         self.pred_r = 0.0                               # 오른쪽 눈 예측 값
         self.pred_l = 0.0                               # 왼쪽 눈 예측 값
+
+        self.front_back = 0.0
+        self.check_sleep_fb = False
+        self.start_sleep_fb = 0
 
     # 소멸자(웹캠 종료)
     def __del__(self):
@@ -63,7 +65,7 @@ class Sleep_Detector(object):
         # 눈부분 사진과 눈부분 사각형 좌표값 반환
         return eye_img, eye_rect
 
-    # 눈 깜빡임 감지 모델 기반 졸음 감지 함수
+    # 졸음 감지 함수
     # 졸음이 감지되면 True 를 반환하면서 함수를 종료함
     def sleepDetection(self):
         if self.pred_r < 0.1 and self.pred_l < 0.1:                 # 두 눈이 감겼을 때
@@ -77,30 +79,32 @@ class Sleep_Detector(object):
                 self.start_sleep = time.time()                      # 시간측정 시작
         else:                                                       # 두 눈을 감지 않았을 때
             self.check_sleep = False                                # 졸음 감지 변수를 False 로 변경
-            
-    # 정면/정수리 이중 분류 모델 기반 졸음 감지 함수
-    # 졸음이 감지되면 True를 반환
-    def front_top_detection(self):
-        pred = front_top_model.predict(self.frame)          # 모델 예측값
-        if pred > 0.5:                                              # 고개를 숙였을 때
-            if self.check_sleep:                                    # 졸음이 감지된 적이 있는 경우
-                if time.time() == self.start_sleep > 3:             # 2초가 지났을 경우
-                    self.start_sleep = time.time()                  # 시간 측정 시작
-                    self.check_sleep = False                        # 졸음 감지 변수 False로 변경
-                    return True                                     # 졸음이 감지된 상황 -> True 반환
-            else:                                                   # 졸음이 감지된 적이 없는 경우
-                self.check_sleep = True                             # 졸음 감지 변수를 True 로 변경
-                self.start_sleep = time.time()                      # 시간측정 시작
-        else:                                                       # 두 눈을 감지 않았을 때
-            self.check_sleep = False                                # 졸음 감지 변수를 False 로 변경
+
+    def sleepDetection_frot_back(self):
+        if self.front_back < 0.0001:
+            if self.check_sleep_fb == True:
+                if time.time() - self.start_sleep_fb > 5:
+                    self.start_sleep_fb = time.time()
+                    self.check_sleep_fb = False
+                    return True
+            else:
+                self.check_sleep_fb = True
+                self.start_sleep_fb = time.time()
+        else:
+            self.check_sleep_fb = False
 
     # 웹캠 영상 연결 및 프레임 읽기
     # 프레임에 대한 딥러닝 모델 예측
     def get_frame(self):
         self.success, self.image = self.video.read()                            # 프레임 읽어오기
         self.image = cv2.resize(self.image, dsize=(650, 550), fx=0.5, fy=0.5)   # 프레임을 높이, 너비를 각각 절반으로 줄임.
-        self.frame = cv2.resize(self.image, dsize=(150, 150))
-        self.frame = np.expand_dims(self.frame, axis=0)
+
+        tempimg = self.image.copy()
+        testimg = cv2.resize(tempimg, (150, 150))
+        testimg = testimg.copy().reshape((1, 150, 150, 3)).astype(np.float32) / 255.
+        self.front_back = model2.predict(testimg)
+        print(self.front_back)
+        self.get_sleep_front_back()
 
         # cv2.cvtcolor(원본 이미지, 색상 변환 코드)를 이용하여 이미지의 색상 공간을 변경
         # 변환코드(code) cv2.COLOR_BGR2GRAY는 출력영상이 GRAY로 변환
@@ -136,8 +140,8 @@ class Sleep_Detector(object):
 
             # cnn모델 predict메소드에 가공한 전처리한 눈사진을 넣어 값을 예측.
             # 모델출력값은 pred_l, pred_r에 0.0~1.0 사이 값이 저장. 눈을 크게뜰수록 1에 가까워짐.
-            self.pred_l = blink_model.predict(eye_input_l)
-            self.pred_r = blink_model.predict(eye_input_r)
+            self.pred_l = model.predict(eye_input_l)
+            self.pred_r = model.predict(eye_input_r)
 
             # visualize
             # 모델출력값이 0이라면 '_ 0.0'으로, 그 외의 숫자라면 '0 0.3'형식으로 문자열 반환하는 문자열을 정의
@@ -167,13 +171,15 @@ class Sleep_Detector(object):
 
     # 졸음감지 알림 함수
     def get_sleep(self):
-        if self.sleepDetection():                                   # 졸음감지를 하면
-            tts_s_path = 'data/sleep_notification.mp3'              # 음성 알림 파일
-            playsound(tts_s_path)                                   # 음성으로 알림
+        if self.sleepDetection():                           # 졸음감지를 하면
+            tts_s_path = 'data/sleep_notification.mp3'      # 음성 알림 파일
+            playsound(tts_s_path)                           # 음성으로 알림
 
-        if self.front_top_detection():                              # 정수리 감지 시
-            tts_s_path = 'data/sleep_notification.mp3'              # 음성 알림 파일
-            playsound(tts_s_path)                                   # 음성으로 알림
+    def get_sleep_front_back(self):
+        if self.sleepDetection_frot_back():
+            tts_s_path = 'data/sleep_notification.mp3'  # 음성 알림 파일
+            playsound(tts_s_path)  # 음성으로 알림
+
 
 # Blink_Detector 클래스
 class Blink_Detector(object):
@@ -278,8 +284,8 @@ class Blink_Detector(object):
 
             # cnn모델 predict메소드에 가공한 전처리한 눈사진을 넣어 값을 예측.
             # 모델출력값은 pred_l, pred_r에 0.0~1.0 사이 값이 저장. 눈을 크게뜰수록 1에 가까워짐.
-            self.pred_l = blink_model.predict(eye_input_l)
-            self.pred_r = blink_model.predict(eye_input_r)
+            self.pred_l = model.predict(eye_input_l)
+            self.pred_r = model.predict(eye_input_r)
 
             self.blink_count()              # 눈동자 깜빡임 횟수 부족 알림 함수 호출
 
@@ -347,6 +353,10 @@ class sleep_Blink_Detector(object):
         self.pred_r = 0.0                               # 오른쪽 눈 예측 값
         self.pred_l = 0.0                               # 왼쪽 눈 예측 값
 
+        self.front_back = 0.0
+        self.check_sleep_fb = False
+        self.start_sleep_fb = 0
+
     # 소멸자(웹캠 종료)
     def __del__(self):
         self.video.release()                            # 웹캠 연결 해제
@@ -396,21 +406,18 @@ class sleep_Blink_Detector(object):
         else:                                                       # 두 눈을 감지 않았을 때
             self.check_sleep = False                                # 졸음 감지 변수를 False 로 변경
 
-    # 정면 정수리 이중 분류 모델 기반 졸음 감지 함수
-    # 졸음이 감지되면 True를 반환
-    def front_top_detection(self):
-        pred = front_top_model.predict(self.image)
-        if pred == 0:  # 고개를 숙였을 때
-            if self.check_sleep:  # 졸음이 감지된 적이 있는 경우
-                if time.time() == self.start_sleep > 2:  # 2초가 지났을 경우
-                    self.start_sleep = time.time()  # 시간 측정 시작
-                    self.check_sleep = False  # 졸음 감지 변수 False로 변경
-                    return True  # 졸음이 감지된 상황 -> True 반환
-            else:  # 졸음이 감지된 적이 없는 경우
-                self.check_sleep = True  # 졸음 감지 변수를 True 로 변경
-                self.start_sleep = time.time()  # 시간측정 시작
-        else:  # 두 눈을 감지 않았을 때
-            self.check_sleep = False  # 졸음 감지 변수를 False 로 변경
+    def sleepDetection_frot_back(self):
+        if self.front_back < 0.0001:
+            if self.check_sleep_fb == True:
+                if time.time() - self.start_sleep_fb > 5:
+                    self.start_sleep_fb = time.time()
+                    self.check_sleep_fb = False
+                    return True
+            else:
+                self.check_sleep_fb = True
+                self.start_sleep_fb = time.time()
+        else:
+            self.check_sleep_fb = False
 
     # 눈동자 깜빡임 횟수 측정 및 경고 여부를 반환하는 함수
     def eyeBlinkDetection(self):
@@ -431,6 +438,12 @@ class sleep_Blink_Detector(object):
     def get_frame(self):
         self.success, self.image = self.video.read()                            # 프레임 읽어오기
         self.image = cv2.resize(self.image, dsize=(650, 550), fx=0.5, fy=0.5)   # 프레임을 높이, 너비를 각각 절반으로 줄임.
+
+        tempimg = self.image.copy()
+        testimg = cv2.resize(tempimg, (150, 150))
+        testimg = testimg.copy().reshape((1, 150, 150, 3)).astype(np.float32) / 255.
+        self.front_back = model2.predict(testimg)
+        self.get_sleep_front_back()
 
         # cv2.cvtcolor(원본 이미지, 색상 변환 코드)를 이용하여 이미지의 색상 공간을 변경
         # 변환코드(code) cv2.COLOR_BGR2GRAY는 출력영상이 GRAY로 변환
@@ -466,8 +479,8 @@ class sleep_Blink_Detector(object):
 
             # cnn모델 predict메소드에 가공한 전처리한 눈사진을 넣어 값을 예측.
             # 모델출력값은 pred_l, pred_r에 0.0~1.0 사이 값이 저장. 눈을 크게뜰수록 1에 가까워짐.
-            self.pred_l = blink_model.predict(eye_input_l)
-            self.pred_r = blink_model.predict(eye_input_r)
+            self.pred_l = model.predict(eye_input_l)
+            self.pred_r = model.predict(eye_input_r)
 
             self.blink_count()              # 눈동자 깜빡임 횟수 부족 감지 함수 호출
             self.get_sleep()                # 졸음 감지 함수 호출
@@ -519,6 +532,11 @@ class sleep_Blink_Detector(object):
 
     # 졸음감지 알림 함수
     def get_sleep(self):
-        if self.sleepDetection() or self.front_top_detection():     # 졸음감지를 하면
-            tts_s_path = 'data/sleep_notification.mp3'              # 음성 알림 파일
-            playsound(tts_s_path)                                   # 음성으로 알림
+        if self.sleepDetection():                           # 졸음감지를 하면
+            tts_s_path = 'data/sleep_notification.mp3'      # 음성 알림 파일
+            playsound(tts_s_path)                           # 음성으로 알림
+
+    def get_sleep_front_back(self):
+        if self.sleepDetection_frot_back():
+            tts_s_path = 'data/sleep_notification.mp3'  # 음성 알림 파일
+            playsound(tts_s_path)  # 음성으로 알림
