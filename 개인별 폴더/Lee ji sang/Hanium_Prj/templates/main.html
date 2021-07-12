@@ -41,9 +41,15 @@
           <li class="nav-item active">
             <a class="nav-link" href="#">Mypage</a>
           </li>
+
           <li class="nav-item active">
-            <a class="nav-link" href="#"></a>
+            <a class="nav-link" href="#">사용자 : {{user.username}}님</a>
           </li>
+
+          <li class="nav-item active">
+            <a class="nav-link" href="{% url 'login' %}">Logout</a>
+          </li>
+
         </ul>
       </div>
     </div>
@@ -54,7 +60,7 @@
     <!-- Heading Row -->
     <div class="row align-items-center my-5">
       <div class="col-lg-7">
-        <img src="/static/img/preview.png"  height="400" width="600">
+        <img src="https://i1.sndcdn.com/avatars-000530797560-zky5dg-t500x500.jpg"  height="400" width="600">
       </div>
       <!-- /.col-lg-8 -->
       <div class="col-lg-5">
