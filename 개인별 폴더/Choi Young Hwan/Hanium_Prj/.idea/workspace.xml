@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="dc6a310a-accb-4b41-87dd-63ab4f9fa988" name="Default Changelist" comment="" />
+    <list default="true" id="fe0eccc6-0026-4592-b537-15d67f9208e6" name="Default Changelist" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="ProjectId" id="1tDDG18lYt5QlptndmKi857Eise" />
+  <component name="ProjectId" id="1vO49LEULSVru31QpVK9H15MYoB" />
+  <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -18,12 +19,18 @@
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="dc6a310a-accb-4b41-87dd-63ab4f9fa988" name="Default Changelist" comment="" />
-      <created>1622294666546</created>
+      <changelist id="fe0eccc6-0026-4592-b537-15d67f9208e6" name="Default Changelist" comment="" />
+      <created>1626419652320</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1622294666546</updated>
+      <updated>1626419652320</updated>
     </task>
     <servers />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="623" y="225" width="672" height="678" key="search.everywhere.popup" timestamp="1626599515877">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="623" y="225" width="672" height="678" key="search.everywhere.popup/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1626599515877" />
   </component>
 </project>
