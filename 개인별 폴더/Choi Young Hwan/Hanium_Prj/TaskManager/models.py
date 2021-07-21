@@ -28,25 +28,25 @@ class AuthUser(models.Model):
 
 
 class BlinkData(models.Model):
-    uid = models.ForeignKey(AuthUser, models.DO_NOTHING, db_column='uid')
+    id = models.OneToOneField(AuthUser, models.DO_NOTHING, db_column='id', primary_key=True)
     b_time = models.DateTimeField()
-    b_count = models.IntegerField()
-    username = models.CharField(max_length=150)
+    username = models.CharField(max_length=150, blank=True, null=True)
 
     class Meta:
         managed = False
         db_table = 'blink_data'
+        unique_together = (('id', 'b_time'),)
 
 
 class DrowsinessData(models.Model):
-    uid = models.ForeignKey(AuthUser, models.DO_NOTHING, db_column='uid')
+    id = models.OneToOneField(AuthUser, models.DO_NOTHING, db_column='id', primary_key=True)
     d_time = models.DateTimeField()
-    d_count = models.IntegerField()
-    username = models.CharField(max_length=150)
+    username = models.CharField(max_length=150, blank=True, null=True)
 
     class Meta:
         managed = False
         db_table = 'drowsiness_data'
+        unique_together = (('id', 'd_time'),)
 
 
 class Freeboard(models.Model):

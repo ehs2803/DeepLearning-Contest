@@ -38,12 +38,19 @@
 	   top : 120px;
 	   left : 70px;
 	}
+	.tip{
+	  position : absolute;
+	  width : 700px;
+	  height : 170px;
+	  top : 700px;
+	  left : 600px;
+	}
 	.warn{
 	  position : absolute;
 	  width : 500px;
 	  height : 130px;
 	  top : 700px;
-	  left : 80px;
+	  left : 100px;
 	}
 	.clock{
 	   position : absolute;
@@ -115,7 +122,7 @@
             <a class="nav-link" href="{% url 'about' %}">About</a>
           </li>
           <li class="nav-item active">
-            <a class="nav-link" href="#">Mypage</a>
+            <a class="nav-link" href="{% url 'mypage %}">Mypage</a>
           </li>
           <li class="nav-item active">
             <a class="nav-link" href="#"></a>
@@ -188,12 +195,21 @@
     <p>ㆍ주변 밝기가 너무 어두우면 인식의 어려움이 있을 수 있습니다</p>
   </div>
 
+  <div class="tip">
+    <a href="{% url 'tip' %}" target="_blank">
+      <button class="favorite styled"
+        type="button">
+    tip
+    </button>
+    </a>
+  </div>
+
 </div>
 
   <!--<link rel="stylesheet" href="{% static 'css/clock.css' %}">-->
 
-  <script src="{% static 'css/clock.js' %}"></script>
-  <script src="{% static 'css/stop.js' %}"></script>
+  <script src="{% static 'css/js/clock.js' %}"></script>
+  <script src="{% static 'css/js/stop.js' %}"></script>
   <script>
     function newRegister() {
       var newItem = document.createElement("li");  // 요소 노드 추가

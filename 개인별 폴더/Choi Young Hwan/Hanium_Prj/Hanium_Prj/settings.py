@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
+from django.contrib.messages import constants as messages_constants
 from pathlib import Path
 import os
 
@@ -137,4 +138,7 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static")
 ]
 
-LOGIN_REDIRECT_URL='/main'
+# login 성공 시 이동할 url 필요한코드인가(?)
+# LOGIN_REDIRECT_URL='/main'
+
+MESSAGE_LEVEL = messages_constants.ERROR
