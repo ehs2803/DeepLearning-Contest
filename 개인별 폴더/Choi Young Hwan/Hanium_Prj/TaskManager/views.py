@@ -2,13 +2,12 @@ from django.http.response import StreamingHttpResponse
 from TaskManager.sleep import Sleep_Detector
 from TaskManager.sleep import Blink_Detector
 from TaskManager.sleep import sleep_Blink_Detector
+from TaskManager.sleep import D_time
 from TaskManager.models import *
 
 from django.shortcuts import render, redirect
-from django.db import connection
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import check_password
-from datetime import datetime
 
 # 회원 가입
 def signup(request):
@@ -87,10 +86,12 @@ def page_not_found(request, exception):
 # 메인 페이지
 def main(request):
     username = None
-    if request.session.get('id'):
-        username = User.objects.get(username=request.session.get('username'))
+    if request.session.get('id', None):
+        id = request.session.get('id', None)
+        username = request.session.get('username', None)
     # html로 세션 데이터 전송
     context = {
+        'id' : id,            # 사용자 번호
         'username': username  # 사용자 아이디
     }
     return render(request, "main.html", context=context)
@@ -106,10 +107,16 @@ def about(request):
 
 # 마이페이지 임시
 def MyPage(request):
+    id = None
     username = None
     if request.session.get('id'):
-        data = User.objects.values()    # 임시 소스
+        id = request.session.get('id', None)
+        username = request.session.get('username', None)
+    # 졸음통계 데이터
+    data=DrowsinessData.objects.all()
     context = {
+        'id':id,
+        'username':username,
         'data':data
     }
     return render(request, 'mypage.html', context=context)
@@ -120,10 +127,19 @@ def Task_Manager(request):
     id = None
     username = None
     if request.session.get('id'):
-        id = User.objects.get(id=request.session.get('id'))
-        username = User.objects.get(username=request.session.get('username'))
+        id = AuthUser.objects.get(id=request.session.get('id', None))
+        username = request.session.get('username', None)
+        d_time = D_time
+        if d_time is not None:
+            print(d_time)
+            DrowsinessData.objects.create(
+                id=id,
+                d_time=d_time,
+                username=username
+            )
     context = {
-
+        'id':id,
+        'username':username
     }
     return render(request, "TaskManager.html", context=context)
 
@@ -133,10 +149,11 @@ def Drowsiness(request):
     id = None
     username = None
     if request.session.get('id'):
-        id = User.objects.get(id=request.session.get('id'))
-        username = User.objects.get(username=request.session.get('username'))
+        id = request.session.get('id', None)
+        username = request.session.get('username', None)
     context = {
-
+        'id':id,
+        'username':username
     }
     return render(request, "Drowsiness.html", context=context)
 
@@ -145,10 +162,11 @@ def Blinking(request):
     id = None
     username = None
     if request.session.get('id'):
-        id = User.objects.get(id=request.session.get('id'))
-        username = User.objects.get(username=request.session.get('username'))
+        id = request.session.get('id', None)
+        username = request.session.get('username', None)
     context = {
-
+        'id':id,
+        'username':username
     }
     return render(request, "Blinking.html", context=context)
 
@@ -158,10 +176,11 @@ def Board(request):
     id = None
     username = None
     if request.session.get('id'):
-        id = User.objects.get(id=request.session.get('id'))
-        username = User.objects.get(username=request.session.get('username'))
+        id = request.session.get('id', None)
+        username = request.session.get('username', None)
     context = {
-
+        'id':id,
+        'username':username
     }
     return render(request, "Board.html", context=context)
 
@@ -183,7 +202,8 @@ def gen(camera):
 
 
 def task_manager(request):
-    return StreamingHttpResponse(gen(sleep_Blink_Detector()),
+    camera = sleep_Blink_Detector()
+    return StreamingHttpResponse(gen(camera),
                                  content_type='multipart/x-mixed-replace; boundary=frame')
 
 

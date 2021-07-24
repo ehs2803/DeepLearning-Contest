@@ -1,15 +1,22 @@
 from tensorflow.keras.models import load_model
 import cv2, dlib, os, time
 import numpy as np
-from django.conf import settings
 from imutils import face_utils
 from playsound import playsound
+from datetime import datetime
+
+import TaskManager.views
+from django.conf import settings
+from django.db import connection
+
+D_time = None
 
 IMG_SIZE = (34, 26)                                                                 # 눈동자 이미지 사이즈 변수
 detector = dlib.get_frontal_face_detector()                                         # 정면 얼굴 감지기 로드
 model = load_model(os.path.join(settings.BASE_DIR, 'data/detection_model.h5'))  # 눈동자 깜빡임 감지 모델 로드
 predictor = dlib.shape_predictor('data/shape_predictor_68_face_landmarks.dat')      # 얼굴 랜드마크 좌표값 반환 함수
 model2 = load_model(os.path.join(settings.BASE_DIR, 'data/Front_and_Top_2021_07_02.h5'))
+
 
 # Sleep_Detector 클래스
 class Sleep_Detector(object):
@@ -483,7 +490,7 @@ class sleep_Blink_Detector(object):
             self.pred_r = model.predict(eye_input_r)
 
             self.blink_count()              # 눈동자 깜빡임 횟수 부족 감지 함수 호출
-            self.get_sleep()                # 졸음 감지 함수 호출
+            temp = self.get_sleep()                # 졸음 감지 함수 호출
 
             # visualize
             # 모델출력값이 0이라면 '_ 0.0'으로, 그 외의 숫자라면 '0 0.3'형식으로 문자열 반환하는 문자열을 정의
@@ -535,6 +542,10 @@ class sleep_Blink_Detector(object):
         if self.sleepDetection():                           # 졸음감지를 하면
             tts_s_path = 'data/sleep_notification.mp3'      # 음성 알림 파일
             playsound(tts_s_path)                           # 음성으로 알림
+            now = datetime.now()
+            global D_time
+            # D_time = now.strftime('%Y=%m-%d %H:%M:%S')
+            D_time = now
 
     def get_sleep_front_back(self):
         if self.sleepDetection_frot_back():
