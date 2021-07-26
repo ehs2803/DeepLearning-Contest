@@ -1,5 +1,3 @@
-
-
 /*변수 선언*/
 
 var pw1 = document.querySelector('#password');
@@ -8,7 +6,7 @@ var pwImg1 = document.querySelector('#pswd1_img1');
 
 var pw2 = document.querySelector('#confirm');
 var pwImg2 = document.querySelector('#pswd2_img1');
-var pwMsgArea = document.querySelector('.int_pass');
+var pwMsgArea = document.querySelector('.idForm');
 
 var userName = document.querySelector('#username');
 
@@ -35,10 +33,10 @@ LastName.addEventListener("focusout", checkFirstName);
 /* ID */
 function checkName() {
     var idPattern = /[a-zA-Z0-9_-]{5,20}/;
-    if(userName.value === "") {
+    if (userName.value === "") {
         error[0].innerHTML = "필수 정보입니다.";
         error[0].style.display = "block";
-    } else if(!idPattern.test(userName.value)) {
+    } else if (!idPattern.test(userName.value)) {
         error[0].innerHTML = "5~20자의 영문 대 소문자, 숫자만 사용 가능합니다.";
         error[0].style.display = "block";
     } else {
@@ -51,38 +49,38 @@ function checkName() {
 /* 비밀번호 */
 function checkPw() {
     var pwPattern = /[a-zA-Z0-9~!@#$%^&*()_+|<>?:{}]{8,16}/;
-    if(pw1.value === "") {
+    if (pw1.value === "") {
         error[1].innerHTML = "필수 정보입니다.";
         error[1].style.display = "block";
-    } else if(!pwPattern.test(pw1.value)) {
+    } else if (!pwPattern.test(pw1.value)) {
         error[1].innerHTML = "8~16자 영문 대 소문자, 숫자, 특수문자를 사용하세요.";
         pwMsg.innerHTML = "사용불가";
         pwMsgArea.style.paddingRight = "93px";
         error[1].style.display = "block";
 
         pwMsg.style.display = "block";
-        pwImg1.src = "/static/assets/img/m_icon_not_use.png";
+        pwImg1.src = "/static/img/m_icon_not_use.png";
     } else {
         error[1].style.display = "none";
         pwMsg.innerHTML = "안전";
         pwMsg.style.display = "block";
         pwMsg.style.color = "#03c75a";
-        pwImg1.src = "/static/assets/img/m_icon_safe.png";
+        pwImg1.src = "/static/img/m_icon_safe.png";
     }
 }
 
 /* 비밀번호 재확인 */
 function comparePw() {
-    if(pw2.value === pw1.value && pw2.value !== "") {
-        pwImg2.src = "/static/assets/img/m_icon_check_enable.png";
+    if (pw2.value === pw1.value && pw2.value !== "") {
+        pwImg2.src = "/static/img/m_icon_check_enable.png";
         error[2].style.display = "none";
-    } else if(pw2.value !== pw1.value) {
-        pwImg2.src = "/static/assets/img/m_icon_check_disable.png";
+    } else if (pw2.value !== pw1.value) {
+        pwImg2.src = "/static/img/m_icon_check_disable.png";
         error[2].innerHTML = "비밀번호가 일치하지 않습니다.";
         error[2].style.display = "block";
     }
 
-    if(pw2.value === "") {
+    if (pw2.value === "") {
         error[2].innerHTML = "필수 정보입니다.";
         error[2].style.display = "block";
     }
@@ -92,23 +90,23 @@ function comparePw() {
 /* 성 */
 function checkFirstName() {
     var namePattern = /[a-zA-Z가-힣]/;
-    if(FirstName.value === "") {
+    if (FirstName.value === "") {
         error[3].innerHTML = "필수 정보입니다.";
         error[3].style.display = "block";
-    } else if(!namePattern.test(FirstName.value)) {
+    } else if (!namePattern.test(FirstName.value)) {
         error[3].innerHTML = "한글과 영문 대 소문자를 사용하세요. (특수기호, 공백 사용 불가)";
         error[3].style.display = "block";
     } else {
         error[3].style.display = "none";
     }
 }
- /* 이름 */
+/* 이름 */
 function checkLastName() {
     var namePattern = /[a-zA-Z가-힣]/;
-    if(LastName.value === "") {
+    if (LastName.value === "") {
         error[4].innerHTML = "필수 정보입니다.";
         error[4].style.display = "block";
-    } else if(!namePattern.test(LastName.value)) {
+    } else if (!namePattern.test(LastName.value)) {
         error[4].innerHTML = "한글과 영문 대 소문자를 사용하세요. (특수기호, 공백 사용 불가)";
         error[4].style.display = "block";
     } else {
@@ -119,10 +117,10 @@ function checkLastName() {
 /* 이메일 */
 function isEmailCorrect() {
     var emailPattern = /[a-z0-9]{2,}@[a-z0-9-]{2,}\.[a-z0-9]{2,}/;
-    if(userEmail.value === ""){
+    if (userEmail.value === "") {
         error[6].innerHTML = "필수 정보입니다.";
         error[6].style.display = "block";
-    } else if(!emailPattern.test(userEmail.value)) {
+    } else if (!emailPattern.test(userEmail.value)) {
         error[6].innerHTML = "이메일 형식이 아닙니다."
         error[6].style.display = "block";
     } else {
@@ -130,100 +128,3 @@ function isEmailCorrect() {
     }
 
 }
-
-/*
-2월 : 윤년에는 29일까지, 평년에는 28일까지.
-1,3,5,7, 8,10,12 -> 31일
-2,4,6, 9,11 -> 30일
-
-    var days31 = [1, 3, 5, 7, 8, 10, 12];
-    var days30 = [4, 6, 9, 11];
-
-    if(mm.value )
-
-var sel = document.getElementById("sel");
-var val = sel.options[sel.selectedIndex].value;
-
-var id = document.querySelector('#id');
-var pw1 = document.querySelector('#pswd1');
-var pw2 = document.querySelector('#pswd2');
-var yourName = document.querySelector('#name');
-var yy = document.querySelector('#yy');
-var mm = document.querySelector('#mm');
-var dd = document.querySelector('#dd');
-var email = document.querySelector('#email');
-var mobile = document.querySelector('#mobile');
-var error = document.querySelectorAll('.error_next_box');
-
-var pattern_num = /[0-9]/;
-var pattern_spc = /[~!@#$%^&*()_+|<>?:{}]/;
-
-
-id.onchange = checkId;
-pw1.onchange = checkPw;
-pw2.onchange = comparePw;
-yourName.onchange = checkName;
-yy.onchange = checkYear;
-
-
-function checkId() {
-    if(id.value === "") {
-        error[0].style.display = "block";
-    } else if(id.value.length < 5 || id.value.length > 20){
-        error[0].innerHTML = "5~20자의 영문 소문자, 숫자와 특수기호(_),(-)만 사용 가능합니다.";
-        error[0].style.display = "block";
-    }
-}
-
-function checkPw() {
-    if(pw1.value === "") {
-        error[1].style.display = "block";
-    } else if (pw1.value.length < 8 || pw1.value.length > 16) {
-        error[1].innerHTML = "8~16자 영문 대 소문자, 숫자, 특수문자를 사용하세요.";
-        error[1].style.display = "block";
-    }
-}
-
-function comparePw() {
-    if(pw2.value === "") {
-        error[2].style.display = "block";
-    } else if (pw2.value !== pw1.value) {
-        error[2].innerHTML = "비밀번호가 일치하지 않습니다.";
-        error[2].style.display = "block";
-    }
-}
-
-function checkName() {
-    if( yourName.value.indexOf(" ") >= 0 || pattern_spc.test(yourName.value) || pattern_num.test(yourName.value) ) {
-        error[3].innerHTML = "한글과 영문 대 소문자를 사용하세요. (특수기호, 공백 사용 불가)";
-        error[3].style.display = "block";
-    } else if(yourName.value.length === 0) {
-        error[3].style.display = "block";
-    } else {
-        error[3].style.display = "none";
-    }
-}
-
-function checkYear() {
-    isBirthEntered();
-    if(yy.value.length !== 4 || !pattern_num.test(yy.value)) {
-        error[4].innerHTML = "태어난 년도 4자리를 정확하게 입력하세요.";
-    } else if (parseInt(yy.value) < 1920) {
-        error[4].innerHTML = "정말이세요?";
-        error[4].style.display = "block";
-    }
-
-}
-
-function isBirthEntered() {
-
-}
-
-function checkEmail() {
-
-}
-
-function checkNumber() {
-    
-}
-*/

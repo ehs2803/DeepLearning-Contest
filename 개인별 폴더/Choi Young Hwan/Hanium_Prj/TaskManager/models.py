@@ -75,14 +75,16 @@ class Questionboard(models.Model):
         db_table = 'questionboard'
 
 
+
+
 class DailyTodo(models.Model):
     uid = models.ForeignKey(AuthUser, models.DO_NOTHING, db_column='uid')
     username = models.CharField(max_length=150)
     starttime = models.DateTimeField()
-    endtime = models.DateTimeField()
     content = models.TextField(blank=True, null=True)
-    is_complete = models.IntegerField()
 
     class Meta:
         managed = False
         db_table = 'daily_todo'
+
+

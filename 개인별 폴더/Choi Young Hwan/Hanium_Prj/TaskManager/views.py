@@ -2,16 +2,22 @@ from django.http.response import StreamingHttpResponse
 from TaskManager.sleep import Sleep_Detector
 from TaskManager.sleep import Blink_Detector
 from TaskManager.sleep import sleep_Blink_Detector
-from TaskManager.sleep import D_time
 from TaskManager.models import *
 
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import check_password
 
+from django.utils import timezone
+
+# sleep.py 에서 사용자 ID 값 참조를 위한 전역변수
+ID = None
+USERNAME = None
+
 # 회원 가입
 def signup(request):
-    global errorMsg
+    global errorMsg     # 에러메시지
+    # POST 요청 시 입력된 데이터(사용자 정보) 저장
     if request.method == 'POST':
         username = request.POST['username']
         email = request.POST['email']
@@ -20,18 +26,22 @@ def signup(request):
         firstname = request.POST['firstname']
         lastname = request.POST['lastname']
 
+        # 회원가입
         try:
+            # 회원가입 실패 시
             if not (username and password and confirm and firstname and lastname and email):
                 errorMsg = '빈칸이 존재합니다!'
             elif password != confirm:
                 errorMsg = '비밀번호가 일치하지 않습니다!'
+            # 회원가입 성공 시
             else:
                 User.objects.create_user(
                     username=username,
                     email=email,
                     password=password,
                     first_name=firstname,
-                    last_name=lastname
+                    last_name=lastname,
+                    date_joined=timezone.now()
                 ).save()
                 return redirect('')         # 회원가입 성공했다는 메시지 출력 후 로그인 페이지로 이동
         except:
@@ -43,7 +53,8 @@ def signup(request):
 
 # 로그인
 def login(request):
-    # POST 요청시
+    global errorMsg         # 에러메시지
+    # POST 요청시 입력된 데이터 저장
     if request.method == 'POST':                                        # 로그인 버튼 클릭
         username = request.POST['username']
         password = request.POST['password']
@@ -71,24 +82,24 @@ def login(request):
 
 # 로그아웃
 def logout(request):
-    del(request.session['id'])    # 세션에서 사용자정보 삭제
-    del(request.seesion['username'])
+    # 세션에 사용자 정보 존재할 경우
+    if request.session.get('id'):
+        del(request.session['id'])          # 사용자 번호 제거
+        del(request.session['username'])    # 사용자 아이디 제거
     return redirect('/')            # 메인 페이지(index.html) 리턴
-
-
-def page_not_found(request, exception):
-    """
-    404 Page not found
-    """
-    return render(request, '404.html', {})
 
 
 # 메인 페이지
 def main(request):
+    id = None
     username = None
+    global ID, USERNAME
     if request.session.get('id', None):
         id = request.session.get('id', None)
         username = request.session.get('username', None)
+        # DB 활용을 위한 전역변수 저장
+        ID = id
+        USERNAME = username
     # html로 세션 데이터 전송
     context = {
         'id' : id,            # 사용자 번호
@@ -99,76 +110,37 @@ def main(request):
 
 # About 페이지
 def about(request):
-    context = {
-
-    }
-    return render(request, "about.html", context=context)
+    return render(request, "about.html")
 
 
 # 마이페이지 임시
 def MyPage(request):
     id = None
     username = None
+
     if request.session.get('id'):
-        id = request.session.get('id', None)
-        username = request.session.get('username', None)
-    # 졸음통계 데이터
-    data=DrowsinessData.objects.all()
+        id = AuthUser.objects.get(id=request.session.get('id', None))
+        username = AuthUser.objects.get(username=request.session.get('username', None))
     context = {
         'id':id,
         'username':username,
-        'data':data
     }
     return render(request, 'mypage.html', context=context)
 
 
 # 통합 페이지
 def Task_Manager(request):
-    id = None
-    username = None
-    if request.session.get('id'):
-        id = AuthUser.objects.get(id=request.session.get('id', None))
-        username = request.session.get('username', None)
-        d_time = D_time
-        if d_time is not None:
-            print(d_time)
-            DrowsinessData.objects.create(
-                id=id,
-                d_time=d_time,
-                username=username
-            )
-    context = {
-        'id':id,
-        'username':username
-    }
-    return render(request, "TaskManager.html", context=context)
+    return render(request, "TaskManager.html")
 
 
 # 졸음 감지 페이지
 def Drowsiness(request):
-    id = None
-    username = None
-    if request.session.get('id'):
-        id = request.session.get('id', None)
-        username = request.session.get('username', None)
-    context = {
-        'id':id,
-        'username':username
-    }
-    return render(request, "Drowsiness.html", context=context)
+    return render(request, "Drowsiness.html")
+
 
 # 눈 깜빡임 감지 페이지
 def Blinking(request):
-    id = None
-    username = None
-    if request.session.get('id'):
-        id = request.session.get('id', None)
-        username = request.session.get('username', None)
-    context = {
-        'id':id,
-        'username':username
-    }
-    return render(request, "Blinking.html", context=context)
+    return render(request, "Blinking.html")
 
 
 # 게시판 페이지
@@ -187,10 +159,7 @@ def Board(request):
 
 # 졸음 해소 스트레칭 동영상 페이지
 def tip(request):
-    context={
-
-    }
-    return render(request, "tip.html", context=context)
+    return render(request, "tip.html")
 
 
 # 카메라 연결
@@ -202,8 +171,7 @@ def gen(camera):
 
 
 def task_manager(request):
-    camera = sleep_Blink_Detector()
-    return StreamingHttpResponse(gen(camera),
+    return StreamingHttpResponse(gen(sleep_Blink_Detector()),
                                  content_type='multipart/x-mixed-replace; boundary=frame')
 
 

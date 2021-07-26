@@ -1,15 +1,15 @@
 from tensorflow.keras.models import load_model
 import cv2, dlib, os, time
 import numpy as np
+
 from imutils import face_utils
 from playsound import playsound
-from datetime import datetime
 
-import TaskManager.views
 from django.conf import settings
 from django.db import connection
+from django.utils import timezone
 
-D_time = None
+from TaskManager import views
 
 IMG_SIZE = (34, 26)                                                                 # 눈동자 이미지 사이즈 변수
 detector = dlib.get_frontal_face_detector()                                         # 정면 얼굴 감지기 로드
@@ -110,7 +110,7 @@ class Sleep_Detector(object):
         testimg = cv2.resize(tempimg, (150, 150))
         testimg = testimg.copy().reshape((1, 150, 150, 3)).astype(np.float32) / 255.
         self.front_back = model2.predict(testimg)
-        print(self.front_back)
+        # print(self.front_back)
         self.get_sleep_front_back()
 
         # cv2.cvtcolor(원본 이미지, 색상 변환 코드)를 이용하여 이미지의 색상 공간을 변경
@@ -180,12 +180,28 @@ class Sleep_Detector(object):
     def get_sleep(self):
         if self.sleepDetection():                           # 졸음감지를 하면
             tts_s_path = 'data/sleep_notification.mp3'      # 음성 알림 파일
-            playsound(tts_s_path)                           # 음성으로 알림
+            playsound(tts_s_path)      # 음성으로 알림
+            # DB에 정보 삽입
+            cursor = connection.cursor()
+            now=timezone.now()
+            formatted_data = now.strftime('%Y=%m-%d %H:%M:%S')
+            cursor.execute('insert into drowsiness_data values(%s,%s,%s)',
+                          (views.ID, formatted_data, views.USERNAME))
+            connection.commit()
+            connection.close()
 
     def get_sleep_front_back(self):
         if self.sleepDetection_frot_back():
-            tts_s_path = 'data/sleep_notification.mp3'  # 음성 알림 파일
-            playsound(tts_s_path)  # 음성으로 알림
+            tts_s_path = 'data/sleep_notification.mp3'      # 음성 알림 파일
+            playsound(tts_s_path)      # 음성으로 알림
+
+            cursor = connection.cursor()
+            now=timezone.now()
+            formatted_data = now.strftime('%Y=%m-%d %H:%M:%S')
+            cursor.execute('insert into drowsiness_data values(%s,%s,%s)',
+                          (views.ID, formatted_data, views.USERNAME))
+            connection.commit()
+            connection.close()
 
 
 # Blink_Detector 클래스
@@ -335,11 +351,19 @@ class Blink_Detector(object):
 
     # 눈동자 깜빡임 횟수 부족 알림 함수
     def blink_count(self):
-        if self.eyeBlinkDetection():                                     # 눈동자 깜빡임의 횟수가 적으면
-            tts_b_path = 'data/blink_count' + str(self.eye_count_min) + '.mp3'      # 알림 음성 파일
-            playsound(tts_b_path)                                        # 음성으로 알림
-            self.start_blink = time.time()                               # 눈동자 깜빡임 시간 측정 시작
-            self.eye_count_min = 0                                       # 눈동자 깜빡임 횟수 저장 변수 0으로 초기화
+        if self.eyeBlinkDetection():  # 눈동자 깜빡임의 횟수가 적으면
+            tts_b_path = 'data/blink_count' + str(self.eye_count_min) + '.mp3'  # 알림 음성 파일
+            playsound(tts_b_path)  # 음성으로 알림
+            self.start_blink = time.time()  # 눈동자 깜빡임 시간 측정 시작
+            self.eye_count_min = 0  # 눈동자 깜빡임 횟수 저장 변수 0으로 초기화
+            # DB에 정보 삽입
+            cursor = connection.cursor()
+            now=timezone.now()
+            formatted_data = now.strftime('%Y=%m-%d %H:%M:%S')
+            cursor.execute('insert into blink_data values(%s,%s,%s)',
+                          (views.ID, formatted_data, views.USERNAME))
+            connection.commit()
+            connection.close()
 
 # sleep_Blink_Detector 클래스 (통합 기능)
 class sleep_Blink_Detector(object):
@@ -536,18 +560,38 @@ class sleep_Blink_Detector(object):
             playsound(tts_b_path)  # 음성으로 알림
             self.start_blink = time.time()  # 눈동자 깜빡임 시간 측정 시작
             self.eye_count_min = 0  # 눈동자 깜빡임 횟수 저장 변수 0으로 초기화
+            # DB에 정보 삽입
+            cursor = connection.cursor()
+            now=timezone.now()
+            formatted_data = now.strftime('%Y=%m-%d %H:%M:%S')
+            cursor.execute('insert into blink_data values(%s,%s,%s)',
+                          (views.ID, formatted_data, views.USERNAME))
+            connection.commit()
+            connection.close()
 
     # 졸음감지 알림 함수
     def get_sleep(self):
         if self.sleepDetection():                           # 졸음감지를 하면
             tts_s_path = 'data/sleep_notification.mp3'      # 음성 알림 파일
-            playsound(tts_s_path)                           # 음성으로 알림
-            now = datetime.now()
-            global D_time
-            # D_time = now.strftime('%Y=%m-%d %H:%M:%S')
-            D_time = now
+            playsound(tts_s_path)      # 음성으로 알림
+            # DB에 정보 삽입
+            cursor = connection.cursor()
+            now=timezone.now()
+            formatted_data = now.strftime('%Y=%m-%d %H:%M:%S')
+            cursor.execute('insert into drowsiness_data values(%s,%s,%s)',
+                          (views.ID, formatted_data, views.USERNAME))
+            connection.commit()
+            connection.close()
 
     def get_sleep_front_back(self):
         if self.sleepDetection_frot_back():
-            tts_s_path = 'data/sleep_notification.mp3'  # 음성 알림 파일
-            playsound(tts_s_path)  # 음성으로 알림
+            tts_s_path = 'data/sleep_notification.mp3'      # 음성 알림 파일
+            playsound(tts_s_path)      # 음성으로 알림
+            # DB에 정보 삽입
+            cursor = connection.cursor()
+            now=timezone.now()
+            formatted_data = now.strftime('%Y=%m-%d %H:%M:%S')
+            cursor.execute('insert into drowsiness_data values(%s,%s,%s)',
+                          (views.ID, formatted_data, views.USERNAME))
+            connection.commit()
+            connection.close()
