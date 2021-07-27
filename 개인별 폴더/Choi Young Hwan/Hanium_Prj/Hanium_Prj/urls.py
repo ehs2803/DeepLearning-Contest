@@ -38,4 +38,9 @@ urlpatterns = [
     path('sleep_detector', views.sleep_detector, name='sleep_detector'),    # 졸음감지 url 연결
     path('blink_detector', views.blink_detector, name='blink_detector'),    # 눈깜빡임 url 연결
 
+    path('freeboard/', views.freeboard, name='freeboard'),
+    path('freeboard_writing/', views.freeboard_writing, name='freeboard_writing'),
+    path('freeboard_post/<int:pk>', views.freeboard_post, name='freeboard_post'),
+    path('freeboard_edit/<int:pk>', views.freeboard_edit, name='freeboard_edit'),
+    path('freeboard_delete/<int:pk>', views.freeboard_delete, name='freeboard_delete'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

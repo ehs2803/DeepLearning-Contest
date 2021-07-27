@@ -183,7 +183,7 @@ class Sleep_Detector(object):
             playsound(tts_s_path)      # 음성으로 알림
             # DB에 정보 삽입
             cursor = connection.cursor()
-            now=timezone.now()
+            now=timezone.localtime()
             formatted_data = now.strftime('%Y=%m-%d %H:%M:%S')
             cursor.execute('insert into drowsiness_data values(%s,%s,%s)',
                           (views.ID, formatted_data, views.USERNAME))
@@ -196,7 +196,7 @@ class Sleep_Detector(object):
             playsound(tts_s_path)      # 음성으로 알림
 
             cursor = connection.cursor()
-            now=timezone.now()
+            now=timezone.localtime()
             formatted_data = now.strftime('%Y=%m-%d %H:%M:%S')
             cursor.execute('insert into drowsiness_data values(%s,%s,%s)',
                           (views.ID, formatted_data, views.USERNAME))
@@ -358,7 +358,7 @@ class Blink_Detector(object):
             self.eye_count_min = 0  # 눈동자 깜빡임 횟수 저장 변수 0으로 초기화
             # DB에 정보 삽입
             cursor = connection.cursor()
-            now=timezone.now()
+            now=timezone.localtime()
             formatted_data = now.strftime('%Y=%m-%d %H:%M:%S')
             cursor.execute('insert into blink_data values(%s,%s,%s)',
                           (views.ID, formatted_data, views.USERNAME))
@@ -562,7 +562,7 @@ class sleep_Blink_Detector(object):
             self.eye_count_min = 0  # 눈동자 깜빡임 횟수 저장 변수 0으로 초기화
             # DB에 정보 삽입
             cursor = connection.cursor()
-            now=timezone.now()
+            now=timezone.localtime()
             formatted_data = now.strftime('%Y=%m-%d %H:%M:%S')
             cursor.execute('insert into blink_data values(%s,%s,%s)',
                           (views.ID, formatted_data, views.USERNAME))
@@ -576,7 +576,7 @@ class sleep_Blink_Detector(object):
             playsound(tts_s_path)      # 음성으로 알림
             # DB에 정보 삽입
             cursor = connection.cursor()
-            now=timezone.now()
+            now=timezone.localtime()
             formatted_data = now.strftime('%Y=%m-%d %H:%M:%S')
             cursor.execute('insert into drowsiness_data values(%s,%s,%s)',
                           (views.ID, formatted_data, views.USERNAME))
@@ -589,7 +589,7 @@ class sleep_Blink_Detector(object):
             playsound(tts_s_path)      # 음성으로 알림
             # DB에 정보 삽입
             cursor = connection.cursor()
-            now=timezone.now()
+            now=timezone.localtime()
             formatted_data = now.strftime('%Y=%m-%d %H:%M:%S')
             cursor.execute('insert into drowsiness_data values(%s,%s,%s)',
                           (views.ID, formatted_data, views.USERNAME))

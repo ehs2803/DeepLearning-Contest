@@ -4,9 +4,8 @@
     <div class="container">
         <div class="row">
             <div class="col-md-12 col-xs-12 mx-auto">
-                <h1 class="panel-title"><i class="far fa-edit"></i>&nbsp;자유게시판 </h1>
+                <h1 class="panel-title"><i class="far fa-edit"></i>&nbsp;Q & A </h1>
                 <br><br><br>
-
                 <table class="table table-hover">
                     <thead style="white-space:nowrap;">
                     <tr>
@@ -19,7 +18,7 @@
                     </thead>
                     <tbody>
                     {% for post in posts %}
-                    <tr style="white-space:nowrap;" onclick = "location.href = '/freeboard_post/{{post.id}}'">
+                    <tr style="white-space:nowrap;" onclick = "location.href = '/questionboard_post/{{post.id}}'">
                         <th>{{post.id}}</th>
                         <th>{{post.title}}</th>
                         <td>{{post.name}}</td>
@@ -31,11 +30,10 @@
                 </table>
                 <br>
                 {% if request.session.user %}
-                <a class="btn btn-lg btn-outline-dark" style="float: right;" href="/freeboard_writing"><i class="fas fa-pen"></i>&nbsp;글쓰기</a>
+                <a class="btn btn-lg btn-outline-dark" style="float: right;" href="/questionboard_writing"><i class="fas fa-pen"></i>&nbsp;글쓰기</a>
                 {% else %}
                 <a class="btn btn-lg btn-outline-dark" style="float: right;" href="/login"><i class="fas fa-pen"></i>&nbsp;글쓰기</a>
                 {% endif %}
-
                 <br><br><br>
                 <div class="row">
                     <div class="col">

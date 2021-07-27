@@ -10,6 +10,7 @@ from django.db import models
 
 
 # Create your models here.
+# 사용자(User) 모델
 class AuthUser(models.Model):
     password = models.CharField(max_length=128)
     last_login = models.DateTimeField(blank=True, null=True)
@@ -20,16 +21,17 @@ class AuthUser(models.Model):
     email = models.CharField(max_length=254)
     is_staff = models.IntegerField()
     is_active = models.IntegerField()
-    date_joined = models.DateTimeField(blank=True, null=True)
+    date_joined = models.DateTimeField(auto_now_add=True, blank=True, null=False)
 
     class Meta:
         managed = False
         db_table = 'auth_user'
 
 
+# 눈 깜빡임 통계 데이터 테이블
 class BlinkData(models.Model):
     id = models.OneToOneField(AuthUser, models.DO_NOTHING, db_column='id', primary_key=True)
-    b_time = models.DateTimeField()
+    b_time = models.DateTimeField(null=False)
     username = models.CharField(max_length=150, blank=True, null=True)
 
     class Meta:
@@ -38,9 +40,10 @@ class BlinkData(models.Model):
         unique_together = (('id', 'b_time'),)
 
 
+# 졸음 통계 데이터 테이블
 class DrowsinessData(models.Model):
     id = models.OneToOneField(AuthUser, models.DO_NOTHING, db_column='id', primary_key=True)
-    d_time = models.DateTimeField()
+    d_time = models.DateTimeField(null=False)
     username = models.CharField(max_length=150, blank=True, null=True)
 
     class Meta:
@@ -49,11 +52,12 @@ class DrowsinessData(models.Model):
         unique_together = (('id', 'd_time'),)
 
 
+# 자유게시판 테이블
 class Freeboard(models.Model):
     uid = models.ForeignKey(AuthUser, models.DO_NOTHING, db_column='uid')
     title = models.CharField(max_length=120)
     contents = models.TextField()
-    registered_date = models.DateTimeField()
+    registered_date = models.DateTimeField(auto_now_add=True, null=False)
     hits = models.IntegerField()
     username = models.CharField(max_length=150)
 
@@ -61,12 +65,18 @@ class Freeboard(models.Model):
         managed = False
         db_table = 'freeboard'
 
+    @property
+    def increase_hits(self):
+        self.hits += 1
+        self.save()
 
+
+# 질문게시판 테이블
 class Questionboard(models.Model):
     uid = models.ForeignKey(AuthUser, models.DO_NOTHING, db_column='uid')
     title = models.CharField(max_length=120)
     contents = models.TextField()
-    registered_date = models.DateTimeField()
+    registered_date = models.DateTimeField(auto_now_add=True, null=False)
     hits = models.IntegerField()
     username = models.CharField(max_length=150)
 
@@ -74,13 +84,16 @@ class Questionboard(models.Model):
         managed = False
         db_table = 'questionboard'
 
+    @property
+    def increase_hits(self):
+        self.hits += 1
+        self.save()
 
-
-
+# 일일 스케줄러 테이블
 class DailyTodo(models.Model):
     uid = models.ForeignKey(AuthUser, models.DO_NOTHING, db_column='uid')
     username = models.CharField(max_length=150)
-    starttime = models.DateTimeField()
+    starttime = models.DateTimeField(auto_now_add=True, null=False)
     content = models.TextField(blank=True, null=True)
 
     class Meta:

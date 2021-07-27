@@ -7,6 +7,7 @@ from TaskManager.models import *
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import check_password
+from django.core.paginator import Paginator
 
 from django.utils import timezone
 
@@ -91,58 +92,74 @@ def logout(request):
 
 # 메인 페이지
 def main(request):
-    id = None
-    username = None
     global ID, USERNAME
     if request.session.get('id', None):
-        id = request.session.get('id', None)
-        username = request.session.get('username', None)
+        user = AuthUser.objects.get(id = request.session.get('id', None))
         # DB 활용을 위한 전역변수 저장
-        ID = id
-        USERNAME = username
+        ID = user.id
+        USERNAME = user.username
     # html로 세션 데이터 전송
     context = {
-        'id' : id,            # 사용자 번호
-        'username': username  # 사용자 아이디
+        'user': user
     }
     return render(request, "main.html", context=context)
 
 
 # About 페이지
 def about(request):
-    return render(request, "about.html")
+    if request.session.get('id', None):
+        user = AuthUser.objects.get(id=request.session.get('id', None))
+
+    context = {
+        'user': user
+    }
+    return render(request, "about.html", context=context)
 
 
 # 마이페이지 임시
 def MyPage(request):
-    id = None
-    username = None
-
+    user = None
     if request.session.get('id'):
-        id = AuthUser.objects.get(id=request.session.get('id', None))
-        username = AuthUser.objects.get(username=request.session.get('username', None))
+        user = AuthUser.objects.get(id=request.session.get('id', None))
+
     context = {
-        'id':id,
-        'username':username,
+        'user': user
     }
     return render(request, 'mypage.html', context=context)
 
 
 # 통합 페이지
 def Task_Manager(request):
-    return render(request, "TaskManager.html")
+    if request.session.get('id', None):
+        user = AuthUser.objects.get(id=request.session.get('id', None))
+    context = {
+        'user': user
+    }
+    return render(request, "TaskManager.html", context=context)
 
 
 # 졸음 감지 페이지
 def Drowsiness(request):
-    return render(request, "Drowsiness.html")
+    if request.session.get('id', None):
+        user = AuthUser.objects.get(id=request.session.get('id', None))
+
+    context = {
+        'user': user
+    }
+    return render(request, "Drowsiness.html", context=context)
 
 
 # 눈 깜빡임 감지 페이지
 def Blinking(request):
-    return render(request, "Blinking.html")
+    if request.session.get('id', None):
+        user = AuthUser.objects.get(id=request.session.get('id', None))
 
+    context = {
+        'user': user
+    }
+    return render(request, "Blinking.html", context=context)
 
+###############################################################################################
 # 게시판 페이지
 def Board(request):
     id = None
@@ -156,6 +173,159 @@ def Board(request):
     }
     return render(request, "Board.html", context=context)
 
+# Free Board 게시판
+def freeboard(request):
+    # 사용자정보 로드
+    username = None
+    if request.session.get('user'):                                    # 로그인 중이면
+        username = User.objects.get(pk=request.session.get('user'))     # 사용자 이름 저장
+
+    # 페이지정보 로드
+    all_freeboard_posts = Freeboard.objects.all().order_by('-id')       # 모든 자유게시판 데이터를 id순으로 가져오기
+    paginator = Paginator(all_freeboard_posts, 10)                      # 한 페이지에 10개씩 정렬
+    page = int(request.GET.get('p', 1))                                 # p번 페이지 값, p값 없으면 1 반환
+    posts = paginator.get_page(page)                                    # p번 페이지 가져오기
+
+    # 자유 게시판 페이지(freeboard.html) 리턴
+    return render(request, 'freeboard.html',
+                  {'posts': posts, 'username': username})
+
+# Free Board 게시글 쓰기
+def freeboard_writing(request):
+    # 사용자정보 로드
+    username = None
+    if request.session.get('user'):                                     # 로그인 중이면
+        username = User.objects.get(pk=request.session.get('user'))     # 사용자 이름 저장
+    # POST 요청시
+    if request.method =='POST':
+        # 새 게시글 객체 생성
+        new_post = Freeboard.objects.create(
+            title=request.POST['title'],
+            contents=request.POST['contents'],
+            name=User.objects.get(pk=request.session.get('user')),
+        )
+        return redirect(f'/freeboard_post/{new_post.id}')               # 해당 게시글 페이지로 이동
+
+    # GET 요청시 글쓰기 페이지(writing.html) 리턴
+    return render(request, 'freeboard_writing.html', {'username' : username})
+
+# Free Board 게시글 보기
+def freeboard_post(request, pk):
+    # 사용자정보 로드
+    username = None
+    if request.session.get('user'):                                     # 로그인 중이면
+        username = User.objects.get(pk=request.session.get('user'))     # 사용자 이름 저장
+
+    # 게시글 정보 로드
+    post = get_object_or_404(Freeboard, pk=pk)
+
+    # 해당 게시글 페이지(freeboard_post.html) 반환
+    return render(request, 'freeboard_post.html',
+                  {'post' : post, 'username' : username})
+
+# Free Board 게시글 수정
+def freeboard_edit(request, pk):
+    # 사용자정보 로드
+    username = None
+    if request.session.get('user'):                                     # 로그인 중이면
+        username = User.objects.get(pk=request.session.get('user'))     # 사용자 이름 저장
+
+    # 게시글 정보 로드
+    post = Freeboard.objects.get(pk=pk)
+
+    # POST 요청시
+    if request.method=="POST":
+        post.title = request.POST['title']                              # 제목 수정 반영
+        post.contents = request.POST['contents']                        # 내용 수정 반영
+        post.save()                                                     # 수정된 내용 저장
+        return redirect(f'/freeboard_post/{pk}')                        # 해당 게시글 페이지로 이동
+
+    # GET 요청시 게시글 수정 페이지(postedit.html) 리턴
+    return render(request, 'freeboard_edit.html', {'post':post, 'username' : username})
+
+# Free Board 게시글 삭제
+def freeboard_delete(request, pk):
+    post = Freeboard.objects.get(id=pk)                                 # 해당 게시글 테이블 저장
+    post.delete()                                                       # 해당 게시글 삭제
+    return redirect(f'/freeboard')                                      # 자유 게시판 페이지로 이동
+
+########################################################################################################################
+# Q & A 게시판
+def questionboard(request):
+    # 사용자정보 로드
+    username = None
+    if request.session.get('user'):                                         # 로그인 중이면
+        username = User.objects.get(pk=request.session.get('user'))         # 사용자 이름 저장
+
+    # 페이지정보 로드
+    all_questionboard_posts = Questionboard.objects.all().order_by('-id')   # 모든 자유게시판 데이터를 id순으로 가져오기
+    paginator = Paginator(all_questionboard_posts, 10)                      # 한 페이지에 10개씩 정렬
+    page = int(request.GET.get('p', 1))                                     # p번 페이지 값, p값 없으면 1 반환
+    posts = paginator.get_page(page)                                        # p번 페이지 가져오기
+
+    # 자유 게시판 페이지(freeboard.html) 리턴
+    return render(request, 'questionboard.html',
+                  {'posts': posts, 'username': username})
+
+# Q & A 게시글 쓰기
+def questionboard_writing(request):
+    # 사용자정보 로드
+    username = None
+    if request.session.get('user'):                                         # 로그인 중이면
+        username = User.objects.get(pk=request.session.get('user'))         # 사용자 이름 저장
+    # POST 요청시
+    if request.method =='POST':
+        # 새 게시글 객체 생성
+        new_post = Questionboard.objects.create(
+            title=request.POST['title'],
+            contents=request.POST['contents'],
+            name=User.objects.get(pk=request.session.get('user')),
+        )
+        return redirect(f'/questionboard_post/{new_post.id}')               # 해당 게시글 페이지로 이동
+
+    # GET 요청시 글쓰기 페이지(writing.html) 리턴
+    return render(request, 'questionboard_writing.html', {'username' : username})
+
+# Q & A 게시글 보기
+def questionboard_post(request, pk):
+    # 사용자정보 로드
+    username = None
+    if request.session.get('user'):                                         # 로그인 중이면
+        username = User.objects.get(pk=request.session.get('user'))         # 사용자 이름 저장
+
+    # 게시글 정보 로드
+    post = get_object_or_404(Questionboard, pk=pk)
+
+
+    # 해당 게시글 페이지(freeboard_post.html) 리턴
+    return render(request, 'questionboard_post.html',
+                  {'post' : post, 'username' : username})
+
+# Q & A 게시글 수정
+def questionboard_edit(request, pk):
+    # 사용자정보 로드
+    username = None
+    if request.session.get('user'):                                         # 로그인 중이면
+        username = User.objects.get(pk=request.session.get('user'))         # 사용자 이름 저장
+
+    # 게시글 정보 로드
+    post = Questionboard.objects.get(pk=pk)
+
+    # POST 요청시
+    if request.method=="POST":
+        post.title = request.POST['title']                                  # 제목 수정 반영
+        post.contents = request.POST['contents']                            # 내용 수정 반영
+        post.save()                                                         # 수정된 내용 저장
+        return redirect(f'/questionboard_post/{pk}')                        # 해당 게시글 페이지로 이동
+    # GET 요청시 게시글 수정 페이지(postedit.html) 리턴
+    return render(request, 'questionboard_edit.html', {'post':post, 'username' : username})
+
+# Q & A 게시글 삭제
+def questionboard_delete(request, pk):
+    post = Questionboard.objects.get(id=pk)                                 # 해당 게시글 테이블 저장
+    post.delete()                                                           # 해당 게시글 삭제
+    return redirect(f'/questionboard')                                      # 자유 게시판 페이지로 이동
+######################################################################################################
 
 # 졸음 해소 스트레칭 동영상 페이지
 def tip(request):

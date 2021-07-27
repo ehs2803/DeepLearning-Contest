@@ -7,10 +7,21 @@
 
     .stw {
         position: absolute;
+        border: solid;
         width: 350px;
         height: 150px;
-        left: 820px;
+        left: 790px;
         top: 450px;
+        text-align: center;
+    }
+
+    .button {
+        width: 90px;
+        height: 30px;
+        margin-left: 30px;
+        background: #222;
+        color: #fff;
+        border: none;
     }
 
     .cam {

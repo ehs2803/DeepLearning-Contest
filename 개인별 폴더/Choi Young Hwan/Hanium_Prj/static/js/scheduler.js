@@ -1,3 +1,6 @@
+var add = document.querySelector('#add');
+add.addEventListener("click", newRegister());
+
 function newRegister() {
     var newItem = document.createElement("li"); // 요소 노드 추가
     newItem.className = 'lsclass';

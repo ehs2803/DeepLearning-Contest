@@ -34,10 +34,13 @@
                         <a class="nav-link" href="{% url 'about' %}">About</a>
                     </li>
                     <li class="nav-item active">
-                        <a class="nav-link" href="#">Mypage</a>
+                        <a class="nav-link" href="{% url 'mypage' %}">Mypage</a>
                     </li>
                     <li class="nav-item active">
-                        <a class="nav-link" href="#"></a>
+                        <a class="nav-link">user : '{{user.username}}'님</a>
+                    </li>
+                    <li class="nav-item active">
+                        <a class="nav-link" href="{% url 'logout' %}">Logout</a>
                     </li>
                 </ul>
             </div>
@@ -63,9 +66,9 @@
                 <!--중간 기록할 리스트-->
             </div>
             <div>
-                <button type="button" id="testStartBtn">START</button>
+                <button class = "button" type="button" id="testStartBtn">START</button>
                 <!--시작/재시작/기록 버튼-->
-                <button type="button" id="testStopBtn">STOP</button>
+                <button class = "button" type="button" id="testStopBtn">STOP</button>
                 <!--스톱 버튼-->
             </div>
         </div>
@@ -103,10 +106,15 @@
             <p>ㆍ정확한 인식을위해 카메라각도를 얼굴 정면을 향하도록 하세요</p>
             <p>ㆍ주변 밝기가 너무 어두우면 인식의 어려움이 있을 수 있습니다</p>
         </div>
+        <div class="tip">
+            <a href="{% url 'tip' %}" target="_blank">
+                <button class="button" type="button">tip</button>
+            </a>
+        </div>
     </div>
     <script src="{% static 'js/clock.js' %}"></script>
     <script src="{% static 'js/stop.js' %}"></script>
-    <script src="{% static 'js/scheduler.js' %"></script>
+    <script src="{% static 'js/scheduler.js' %}"></script>
     <script type="text/javascript"></script>
 </body>
 

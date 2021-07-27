@@ -45,15 +45,15 @@
             <a class="nav-link" href="{% url 'about' %}">About</a>
           </li>
           <li class="nav-item active">
-            <a class="nav-link" href="#">Mypage</a>
+            <a class="nav-link" href="{% url 'mypage' %}">Mypage</a>
           </li>
 
           <li class="nav-item active">
-            <a class="nav-link" href="#">사용자 : {{user.username}}님</a>
+            <a class="nav-link">user : '{{user.username}}'님</a>
           </li>
 
           <li class="nav-item active">
-            <a class="nav-link" href="{% url 'login' %}">Logout</a>
+            <a class="nav-link" href="{% url 'logout' %}">Logout</a>
           </li>
         </ul>
       </div>
