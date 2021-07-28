@@ -18,14 +18,16 @@
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
         <div class="container">
-            <a class="navbar-brand" href="{% url 'main' %}">Task Manager</a>
+            <a class="navbar-brand" href="{% url 'index' %}">Task Manager</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarResponsive">
+                <!-- 세션에 사용자가 로그인 한 경우 -->
+                {% if user %}
                 <ul class="navbar-nav ml-auto">
                     <li class="nav-item active">
-                        <a class="nav-link" href="{% url 'main' %}">Home
+                        <a class="nav-link" href="{% url 'main' %}">Main
                             <span class="sr-only">(current)</span>
                         </a>
                     </li>
@@ -42,6 +44,14 @@
                         <a class="nav-link" href="{% url 'logout' %}">Logout</a>
                     </li>
                 </ul>
+                <!-- 세션에 사용자 정보가 없는 경우 -->
+                {% else %}
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="{% url 'login' %}"> 로그인하세요 </a>
+                    </li>
+                </ul>
+                {% endif %}
             </div>
         </div>
     </nav>

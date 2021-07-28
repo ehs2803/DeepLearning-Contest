@@ -138,7 +138,5 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static")
 ]
 
-# login 성공 시 이동할 url 필요한코드인가(?)
-# LOGIN_REDIRECT_URL='/main'
-
-MESSAGE_LEVEL = messages_constants.ERROR
+# login url
+LOGIN_REDIRECT_URL = ''

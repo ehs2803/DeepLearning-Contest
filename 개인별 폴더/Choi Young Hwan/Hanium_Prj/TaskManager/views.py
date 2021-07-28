@@ -15,6 +15,19 @@ from django.utils import timezone
 ID = None
 USERNAME = None
 
+
+# 첫 페이지(index)
+def index(request):
+    user = None
+    if request.session.get('id'):
+        user = User.objects.get(id=request.session.get('id'))
+
+    context = {
+        'user': user
+    }
+    return render(request, "index.html", context=context)
+
+
 # 회원 가입
 def signup(request):
     global errorMsg     # 에러메시지
@@ -70,7 +83,7 @@ def login(request):
                     request.session['email'] = user.email                   # 세션에 이메일 추가
                     request.session['first_name'] = user.first_name         # 세션에 이름 추가
                     request.session['last_name'] = user.last_name           # 세션에 성 추가
-                    return redirect('main/')
+                    return redirect('/main')
                 else:                                                   # 등록된 아이디의 비밀번호가 틀리면
                     errorMsg = '비밀번호가 틀렸습니다.'
         except:                                                         # 등록된 아이디의 정보가 없을 때
@@ -93,11 +106,16 @@ def logout(request):
 # 메인 페이지
 def main(request):
     global ID, USERNAME
+    user = None
     if request.session.get('id', None):
         user = AuthUser.objects.get(id = request.session.get('id', None))
         # DB 활용을 위한 전역변수 저장
         ID = user.id
         USERNAME = user.username
+    # 로그인 하지 않은 사용자의 경우 로그인 페이지로 이동.
+    else:
+        return redirect('/login')
+
     # html로 세션 데이터 전송
     context = {
         'user': user
@@ -107,6 +125,7 @@ def main(request):
 
 # About 페이지
 def about(request):
+    user = None
     if request.session.get('id', None):
         user = AuthUser.objects.get(id=request.session.get('id', None))
 
@@ -130,8 +149,10 @@ def MyPage(request):
 
 # 통합 페이지
 def Task_Manager(request):
+    user = None
     if request.session.get('id', None):
         user = AuthUser.objects.get(id=request.session.get('id', None))
+
     context = {
         'user': user
     }
@@ -140,6 +161,7 @@ def Task_Manager(request):
 
 # 졸음 감지 페이지
 def Drowsiness(request):
+    user = None
     if request.session.get('id', None):
         user = AuthUser.objects.get(id=request.session.get('id', None))
 
@@ -151,6 +173,7 @@ def Drowsiness(request):
 
 # 눈 깜빡임 감지 페이지
 def Blinking(request):
+    user = None
     if request.session.get('id', None):
         user = AuthUser.objects.get(id=request.session.get('id', None))
 
@@ -162,14 +185,12 @@ def Blinking(request):
 ###############################################################################################
 # 게시판 페이지
 def Board(request):
-    id = None
-    username = None
-    if request.session.get('id'):
-        id = request.session.get('id', None)
-        username = request.session.get('username', None)
+    user = None
+    if request.session.get('id', None):
+        user = AuthUser.objects.get(id=request.session.get('id', None))
+
     context = {
-        'id':id,
-        'username':username
+        'user': user
     }
     return render(request, "Board.html", context=context)
 

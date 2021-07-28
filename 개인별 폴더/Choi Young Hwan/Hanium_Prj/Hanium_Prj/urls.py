@@ -20,13 +20,14 @@ from django.urls import path
 from TaskManager import views
 
 urlpatterns = [
-    path('admin/', admin.site.urls),                                        # 관리자
-    path('', views.login, name='login'),                                    # 로그인
-    path('logout/', views.logout, name='logout'),                           # 로그아웃
-    path('signup/', views.signup, name='signup'),                           # 회원 가입
+    path('admin/', admin.site.urls),                                        # 관리자 페이지 url 연결
+    path('', views.index, name='index'),                                    # 첫 페이지
+    path('login/', views.login, name='login'),                              # 로그인 url 연결
+    path('logout/', views.logout, name='logout'),                           # 로그아웃 url 연결
+    path('signup/', views.signup, name='signup'),                           # 회원 가입 url 연결
     path("main/", views.main, name="main"),                                 # main화면 url 연결
     path("about/", views.about, name="about"),                              # About화면 url 연결
-    path("main/mypage/", views.MyPage, name="mypage"),
+    path("mypage/", views.MyPage, name="mypage"),                           # 마이페이지 url 연결
 
     path("TaskManager/", views.Task_Manager, name="TaskManager"),           # 통합 기능 url 연결
     path("Drowsiness/", views.Drowsiness, name="Drowsiness"),               # 졸음감지 url 연결
