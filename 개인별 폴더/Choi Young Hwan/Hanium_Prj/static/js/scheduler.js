@@ -1,6 +1,3 @@
-var add = document.querySelector('#add');
-add.addEventListener("click", newRegister());
-
 function newRegister() {
     var newItem = document.createElement("li"); // 요소 노드 추가
     newItem.className = 'lsclass';
@@ -25,9 +22,9 @@ function newRegister() {
     var jbBtnText = document.createTextNode('할일 완료');
     newButton.appendChild(jbBtnText);
 
-    newItem.appendChild(newp_content); // 텍스트 노드를 요소 노드의 자식 노드로 추가
-    newItem.appendChild(newp_time); // 텍스트 노드를 요소 노드의 자식 노드로 추가
-    newItem.appendChild(newButton);
+    newItem.appendChild(newp_content);  // 텍스트 노드를 요소 노드의 자식 노드로 추가
+    newItem.appendChild(newp_time);     // 텍스트 노드를 요소 노드의 자식 노드로 추가
+    newItem.appendChild(newButton);     // 할일 완료 버튼 추가
 
     var itemList = document.querySelector("#itemList"); // 웹 문서에서 부모 노드 가져오기
 

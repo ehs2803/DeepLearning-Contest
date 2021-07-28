@@ -1,12 +1,11 @@
 {% block content %}
-        <link href="/static/css/account.css" rel="stylesheet">
-
+<link href="/static/css/account.css" rel="stylesheet">
 <div class="container my-3">
     <form method="POST" class="registerForm">
         {% csrf_token %}
         <h2>Sign up</h2>
         <div class="idForm">
-            <label for="username" >아이디를 입력하세요.</label>
+            <label for="username">아이디를 입력하세요.</label>
             <input type="text" class="id" name="username" id="username" placeholder="Enter the ID to join.">
             <span class="error_next_box"></span>
         </div>
@@ -23,7 +22,6 @@
             <img src="/static/img/m_icon_check_disable.png" id="pswd2_img1" class="pswdImg">
             <span class="error_next_box"></span>
         </div>
-
         <div class="idForm">
             <label for="email">이메일을 입력하세요.</label>
             <input type="text" class="id" name="email" id="email" placeholder="Please enter your email.">
@@ -36,15 +34,13 @@
         </div>
         <div class="idForm">
             <label for="firstname">이름을 입력하세요.</label>
-            <input type="text" class="id" name="firstname" id="firstname" placeholder="Please enter your firstname."
-            <span class="error_next_box"></span>
+            <input type="text" class="id" name="firstname" id="firstname" placeholder="Please enter your firstname." <span class="error_next_box"></span>
         </div>
-
         <div class="bottomText">
             <button type="submit" class="btn">생성하기</button>
             <div>계정이 있으신가요? <a href="{% url 'login' %}">로그인</a> 하세요.</div>
         </div>
     </form>
 </div>
-    <script src="/static/js/main.js"></script>
+<script src="/static/js/main.js"></script>
 {% endblock %}
