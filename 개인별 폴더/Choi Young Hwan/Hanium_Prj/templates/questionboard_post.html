@@ -1,11 +1,13 @@
 {% extends "base.html" %}
 {% block content %}
 {% load static %}
-{{post.increase_hits}}
+<a style="display:none;">{{ post.increase_hits}}</a>
+<title>Q & A - {{post.title}}</title>
 <div class="masthead ">
     <div class="container">
         <div class="row">
             <div class="col-md-10 col-xs-10 mx-auto">
+                <br>
                 <h1 class="panel-title text-center"><i class="far fa-edit"></i>&nbsp;&nbsp;Q & A</h1>
                 <br><br><br>
                 <table class="table">

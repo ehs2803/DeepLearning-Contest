@@ -58,7 +58,7 @@ class Freeboard(models.Model):
     title = models.CharField(max_length=120)
     contents = models.TextField()
     registered_date = models.DateTimeField(auto_now_add=True, null=False)
-    hits = models.IntegerField()
+    hits = models.IntegerField(null=False, default=0)
     username = models.CharField(max_length=150)
 
     class Meta:
@@ -77,7 +77,7 @@ class Questionboard(models.Model):
     title = models.CharField(max_length=120)
     contents = models.TextField()
     registered_date = models.DateTimeField(auto_now_add=True, null=False)
-    hits = models.IntegerField()
+    hits = models.IntegerField(null=False, default=0)
     username = models.CharField(max_length=150)
 
     class Meta:
@@ -94,7 +94,7 @@ class DailyTodo(models.Model):
     uid = models.ForeignKey(AuthUser, models.DO_NOTHING, db_column='uid')
     username = models.CharField(max_length=150)
     starttime = models.DateTimeField(auto_now_add=True, null=False)
-    content = models.TextField(blank=True, null=True)
+    content = models.TextField(blank=True, null=False)
 
     class Meta:
         managed = False

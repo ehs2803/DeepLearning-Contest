@@ -1,11 +1,13 @@
 {% extends "base.html" %}
 {% block content %}
 {% load static %}
+<title>자유게시판</title>
 <!-- FreeBoard-->
 <div class="masthead ">
     <div class="container">
         <div class="row">
             <div class="col-md-12 col-xs-12 mx-auto">
+                <br>
                 <h1 class="panel-title"><i class="far fa-edit"></i>&nbsp;자유게시판 </h1>
                 <br><br><br>
                 <table class="table table-hover">
@@ -31,7 +33,7 @@
                     </tbody>
                 </table>
                 <br>
-                {% if request.session.user %}
+                {% if user %}
                 <a class="btn btn-lg btn-outline-dark" style="float: right;" href="/freeboard_writing"><i class="fas fa-pen"></i>&nbsp;글쓰기</a>
                 {% else %}
                 <a class="btn btn-lg btn-outline-dark" style="float: right;" href="/login"><i class="fas fa-pen"></i>&nbsp;글쓰기</a>

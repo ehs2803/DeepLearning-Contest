@@ -13,7 +13,7 @@ var userName = document.querySelector('#username');
 var FirstName = document.querySelector('#firstname')
 var LastName = document.querySelector('#lastname')
 
-var userEmail = document.querySelector('#email');
+var Email = document.querySelector('#email');
 
 var error = document.querySelectorAll('.error_next_box');
 
@@ -23,7 +23,7 @@ var error = document.querySelectorAll('.error_next_box');
 pw1.addEventListener("focusout", checkPw);
 pw2.addEventListener("focusout", comparePw);
 userName.addEventListener("focusout", checkName);
-userEmail.addEventListener("focusout", isEmailCorrect);
+Email.addEventListener("focusout", isEmailCorrect);
 FirstName.addEventListener("focusout", checkLastName);
 LastName.addEventListener("focusout", checkFirstName);
 
@@ -86,20 +86,21 @@ function comparePw() {
     }
 }
 
-
-/* 성 */
-function checkFirstName() {
-    var namePattern = /[a-zA-Z가-힣]/;
-    if (FirstName.value === "") {
+/* 이메일 */
+function isEmailCorrect() {
+    var emailPattern = /[a-z0-9]{2,}@[a-z0-9-]{2,}\.[a-z0-9]{2,}/;
+    if (Email.value === "") {
         error[3].innerHTML = "필수 정보입니다.";
         error[3].style.display = "block";
-    } else if (!namePattern.test(FirstName.value)) {
-        error[3].innerHTML = "한글과 영문 대 소문자를 사용하세요. (특수기호, 공백 사용 불가)";
+    } else if (!emailPattern.test(Email.value)) {
+        error[3].innerHTML = "이메일 형식이 아닙니다."
         error[3].style.display = "block";
     } else {
         error[3].style.display = "none";
     }
+
 }
+
 /* 이름 */
 function checkLastName() {
     var namePattern = /[a-zA-Z가-힣]/;
@@ -114,17 +115,16 @@ function checkLastName() {
     }
 }
 
-/* 이메일 */
-function isEmailCorrect() {
-    var emailPattern = /[a-z0-9]{2,}@[a-z0-9-]{2,}\.[a-z0-9]{2,}/;
-    if (userEmail.value === "") {
-        error[6].innerHTML = "필수 정보입니다.";
-        error[6].style.display = "block";
-    } else if (!emailPattern.test(userEmail.value)) {
-        error[6].innerHTML = "이메일 형식이 아닙니다."
-        error[6].style.display = "block";
+/* 성 */
+function checkFirstName() {
+    var namePattern = /[a-zA-Z가-힣]/;
+    if (FirstName.value === "") {
+        error[5].innerHTML = "필수 정보입니다.";
+        error[5].style.display = "block";
+    } else if (!namePattern.test(FirstName.value)) {
+        error[5].innerHTML = "한글과 영문 대 소문자를 사용하세요. (특수기호, 공백 사용 불가)";
+        error[5].style.display = "block";
     } else {
-        error[6].style.display = "none";
+        error[5].style.display = "none";
     }
-
 }

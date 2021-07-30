@@ -1,10 +1,13 @@
 {% extends "base.html" %}
 {% block content %}
-{{post.increase_hits}}
+{% load static %}
+<a style="display:none;">{{ post.increase_hits}}</a>
+<title>자유게시판 - {{post.title}}</title>
 <div class="masthead ">
     <div class="container">
         <div class="row">
             <div class="col-md-10 col-xs-10 mx-auto">
+                <br>
                 <h1 class="panel-title text-center"><i class="far fa-edit"></i>&nbsp;&nbsp;자유게시판</h1>
                 <br><br><br>
                 <table class="table">
@@ -25,7 +28,7 @@
                         </tr>
                         <tr>
                             <th scope="row" style="white-space:nowrap;">작성자</th>
-                            <td>{{post.name}}</td>
+                            <td>{{post.username}}</td>
                             <td></td>
                         </tr>
                         <tr>
