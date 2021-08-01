@@ -44,10 +44,13 @@ urlpatterns = [
     path('freeboard_post/<int:pk>', views.freeboard_post, name='freeboard_post'),
     path('freeboard_edit/<int:pk>', views.freeboard_edit, name='freeboard_edit'),
     path('freeboard_delete/<int:pk>', views.freeboard_delete, name='freeboard_delete'),
+    path('freeboard_comment/<int:pk>', views.freeboard_comment, name='freeboard_comment'),
 
     path('questionboard/', views.questionboard, name='questionboard'),
     path('questionboard_writing/', views.questionboard_writing, name='questionboard_writing'),
     path('questionboard_post/<int:pk>', views.questionboard_post, name='questionboard_post'),
     path('questionboard_edit/<int:pk>', views.questionboard_edit, name='questionboard_edit'),
     path('questionboard_delete/<int:pk>', views.questionboard_delete, name='questionboard_delete'),
+    path('questionboard_comment/<int:pk>', views.questionboard_comment, name='questionboard_comment'),
+    path('test/', views.Test, name='test'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

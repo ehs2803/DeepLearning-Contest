@@ -3,8 +3,8 @@
 {% load static %}
 <title>TaskManager</title>
 
-<body style="background-color:grey">
-    <div class="all">
+<body style="background-color:#fafafa">
+    <div class="all" style="background-color: #ffffff">
         <div class="cam">
             <img src="{% url 'task_manager' %}">
         </div>
@@ -53,14 +53,14 @@
             <p>공부가 끝난 것은 클릭해서 삭제할 수 있습니다.</p>
             <form method="POST" action="">
                 {% csrf_token %}
-                <input class="input" type="text" name = "content" id="content" autofocus>
+                <input class="input" type="text" name="content" id="content" autofocus>
                 <button class="button" type="submit" onclick="return Scheduler()">추가</button>
             </form>
             <hr>
             <ul>
-            {% for list in TodoList %}
+                {% for list in TodoList %}
                 <div>{{ list }}</div>
-            {% endfor %}
+                {% endfor %}
             </ul>
         </div>
         <div class="how">
@@ -78,4 +78,5 @@
     <script src="{% static 'js/stop.js' %}"></script>
     <script src="{% static 'js/scheduler.js' %}"></script>
 </body>
+<br><br>
 {% endblock %}

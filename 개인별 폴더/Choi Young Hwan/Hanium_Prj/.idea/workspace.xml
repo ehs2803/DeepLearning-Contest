@@ -7,6 +7,9 @@
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../../.." />
+  </component>
   <component name="ProjectId" id="1vphRGSe1934S4XufXZHYTr6yeJ" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectViewState">
@@ -38,5 +41,10 @@
       <screen x="1920" y="0" width="1920" height="1040" />
     </state>
     <state x="2518" y="339" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1536.824/1920.0.1920.1040@1920.0.1920.1040" timestamp="1627613519927" />
+    <state x="309" y="52" width="1519" height="934" key="dock-window-1" timestamp="1627719693219">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="309" y="52" width="1519" height="934" key="dock-window-1/1920.0.1920.1040/0.0.1920.1040@0.0.1920.1040" timestamp="1627716003879" />
+    <state x="309" y="52" width="1519" height="934" key="dock-window-1/1920.0.1920.1040/0.0.1920.1040@1920.0.1920.1040" timestamp="1627719693219" />
   </component>
 </project>

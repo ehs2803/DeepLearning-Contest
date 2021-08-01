@@ -39,6 +39,14 @@ class BlinkData(models.Model):
         db_table = 'blink_data'
         unique_together = (('id', 'b_time'),)
 
+    # DB Data를 dictionary 형태로 변경
+    def to_json(self):
+        return {
+            'id': self.id,
+            'username': self.username,
+            'd_time': self.d_time
+        }
+
 
 # 졸음 통계 데이터 테이블
 class DrowsinessData(models.Model):
@@ -51,6 +59,13 @@ class DrowsinessData(models.Model):
         db_table = 'drowsiness_data'
         unique_together = (('id', 'd_time'),)
 
+    # DB Data를 dictionary 형태로 변경
+    def to_json(self):
+        return {
+            'id': self.id,
+            'username': self.username,
+            'd_time': self.d_time
+        }
 
 # 자유게시판 테이블
 class Freeboard(models.Model):
@@ -99,5 +114,32 @@ class DailyTodo(models.Model):
     class Meta:
         managed = False
         db_table = 'daily_todo'
+
+# 자유게시판 댓글 테이블
+class CommentFreeboard(models.Model):
+    pid = models.OneToOneField('Freeboard', models.DO_NOTHING, db_column='pid', primary_key=True)
+    uid = models.IntegerField()
+    created_date = models.DateTimeField(auto_now_add=True, null=False)
+    comments = models.TextField()
+    username = models.CharField(max_length=150)
+
+    class Meta:
+        managed = False
+        db_table = 'comment_freeboard'
+        unique_together = (('pid', 'uid', 'created_date'),)
+
+
+# 질문게시판 댓글 테이블
+class CommentQuestionboard(models.Model):
+    pid = models.OneToOneField('Questionboard', models.DO_NOTHING, db_column='pid', primary_key=True)
+    uid = models.IntegerField()
+    created_date = models.DateTimeField(auto_now_add=True, null=False)
+    comments = models.TextField()
+    username = models.CharField(max_length=150)
+
+    class Meta:
+        managed = False
+        db_table = 'comment_questionboard'
+        unique_together = (('pid', 'uid', 'created_date'),)
 
 

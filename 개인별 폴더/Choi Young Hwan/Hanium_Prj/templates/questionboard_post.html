@@ -46,6 +46,31 @@
                 <div class="btn-group mr-2 btn-group-lg" role="group" aria-label="edit" style="float:right;">
                     <button type="button" class="btn btn-outline-success" data-toggle="modal" data-target="#exampleModalCenter">수정</button>
                 </div>
+                <!-- 댓글 작성 -->
+                <hr>
+                {% for com in comment %}
+                <div>
+                    <div>{{com.created_date}}</div>
+                    <strong>{{ com.username }}</strong>
+                    <p>{{ com.comments }}</p>
+                </div>
+                {% empty %}
+                <strong>
+                    <p>아직 댓글이 없습니다. 첫번째로 댓글을 달아보세요!</p>
+                </strong>
+                {% endfor %}
+                <hr>
+                <div class="container my-3">
+                    <h5 class="border-bottom pb-2">댓글등록하기</h5>
+                    <form method="post" action="/questionboard_comment/{{post.id}}" class="post-form my-3">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="content">댓글내용</label>
+                            <textarea class="form-control" name="content" id="content" rows="3"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">저장하기</button>
+                    </form>
+                </div>
                 <!-- 게시물 수정 -->
                 <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
                     <div class="modal-dialog modal-dialog-centered " role="document">

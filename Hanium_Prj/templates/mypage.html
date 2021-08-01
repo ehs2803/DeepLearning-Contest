@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+{% load static %}
+<title>Task Manager - MyPage</title>
+
+<head>
+    <!--chart js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.4.1/chart.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="{% static 'css/charts.css' %}">
+</head>
+
+<body>
+    <div class="all">
+        <!--barchart-->
+        <div class="bar">
+            <div>
+                <canvas id="bChart"></canvas>
+                <script src="{% static 'js/bar_chart.js' %}"></script>
+            </div>
+        </div>
+        <!--doughnutchart-->
+        <div class="doughnut">
+            <div>
+                <canvas id="dChart"></canvas>
+                <script src="{% static 'js/doughnut_chart.js'%}"></script>
+            </div>
+        </div>
+    </div>
+</body>
+{% endblock %}
