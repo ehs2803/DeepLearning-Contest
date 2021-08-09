@@ -1,9 +1,28 @@
 {% block content %}
 {% load static %}
-<title>로그인</title>
-<link href="{% static 'css/account.css' %}" rel="stylesheet">
+
+<head>
+    <title>로그인</title>
+    <link href="{% static 'css/account.css' %}" rel="stylesheet">
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="{% static 'css/mains.css' %}" />
+</head>
 
 <body>
+    <!-- Header -->
+    <header id="header">
+        <nav class="left">
+            <!--
+                    <a href="#menu"><span>Menu</span></a>
+                    -->
+        </nav>
+        <a href="{% url 'index' %}" class="logo">Task Manager</a>
+        <nav class="right">
+            <!--
+                    <a class="button alt" href="login" >Log in</a>
+                     -->
+        </nav>
+    </header>
     <div class="container my-3">
         <form method="POST" class="loginForm" action="{% url 'login' %}">
             {% csrf_token %}

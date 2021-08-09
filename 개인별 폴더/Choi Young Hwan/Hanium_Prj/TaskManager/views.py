@@ -85,7 +85,7 @@ def login(request):
                     request.session['email'] = user.email                   # 세션에 이메일 추가
                     request.session['first_name'] = user.first_name         # 세션에 이름 추가
                     request.session['last_name'] = user.last_name           # 세션에 성 추가
-                    return redirect('/main')
+                    return redirect('index')
                 else:                                                   # 등록된 아이디의 비밀번호가 틀리면
                     errorMsg = '비밀번호가 틀렸습니다.'
         except:                                                         # 등록된 아이디의 정보가 없을 때
@@ -146,14 +146,17 @@ def MyPage(request):
     user = None
     if request.session.get('id', None):
         user = AuthUser.objects.get(id=request.session.get('id', None))
-        d_data = DrowsinessData.objects.filter(id=user.id)
-        d_data = list(d_data.values())
-        b_data = BlinkData.objects.filter(id=user.id)
+        # 졸음 감지 데이터 로드
+        d_data = list(DrowsinessData.objects.filter(id=user.id).values())
+        d_data_js = json.dumps(d_data, cls=DjangoJSONEncoder)
 
+        # 눈 깜빡임 데이터 로드
+        b_data = list(BlinkData.objects.filter(id=user.id).values())
+        b_data_js = json.dumps(b_data, cls=DjangoJSONEncoder)
     context = {
         'user': user,
-        'd_data': d_data,
-        'b_data': json.dumps([data.to_json() for data in b_data])
+        'd_data_js': d_data_js,
+        'b_data_js': b_data_js
     }
     return render(request, 'mypage.html', context=context)
 
@@ -479,29 +482,3 @@ def sleep_detector(request):
 def blink_detector(request):
     return StreamingHttpResponse(gen(Blink_Detector()),
                                  content_type='multipart/x-mixed-replace; boundary=frame')
-
-
-## test ##
-# 마이페이지 임시
-def Test(request):
-    # 사용자 정보 로드
-    user = None
-    if request.session.get('id', None):
-        user = AuthUser.objects.get(id=request.session.get('id', None))
-
-        # 사용자의 졸음 감지 데이터
-        # Python 객체를 JSON 포맷 데이터로 변환
-        d_data = list(DrowsinessData.objects.filter(id=user.id).values())
-        d_data_js = json.dumps(d_data, cls=DjangoJSONEncoder)
-
-        # 사용자의 눈 깜빡임 감지 데이터
-        # Python 객체를 JSON 포맷 데이터로 변환
-        b_data = list(BlinkData.objects.filter(id=user.id).values())
-        b_data_js = json.dumps(b_data, cls=DjangoJSONEncoder)
-
-    context = {
-        'user': user,
-        'd_data_js': d_data_js,
-        'b_data+js': b_data_js
-    }
-    return render(request, 'test.html', context=context)

@@ -52,5 +52,4 @@ urlpatterns = [
     path('questionboard_edit/<int:pk>', views.questionboard_edit, name='questionboard_edit'),
     path('questionboard_delete/<int:pk>', views.questionboard_delete, name='questionboard_delete'),
     path('questionboard_comment/<int:pk>', views.questionboard_comment, name='questionboard_comment'),
-    path('test/', views.Test, name='test'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

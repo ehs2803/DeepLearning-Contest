@@ -22,7 +22,7 @@ model2 = load_model(os.path.join(settings.BASE_DIR, 'data/Front_and_Top_2021_07_
 class Sleep_Detector(object):
     # 생성자
     def __init__(self):
-        self.video = cv2.VideoCapture(0)                # 웹캠 연결
+        self.video = cv2.VideoCapture(cv2.CAP_DSHOW+0)                # 웹캠 연결
         self.success, self.image = self.video.read()    # 프레임 읽어오기 success : 연결 성공 여부   image : 프레임 값
 
         # 졸음감지 함수 관련변수
@@ -103,7 +103,7 @@ class Sleep_Detector(object):
     # 웹캠 영상 연결 및 프레임 읽기
     # 프레임에 대한 딥러닝 모델 예측
     def get_frame(self):
-        self.success, self.image = self.video.read()                            # 프레임 읽어오기
+        self.success, self.image = self.video.read()  # 프레임 읽어오기
         self.image = cv2.resize(self.image, dsize=(650, 550), fx=0.5, fy=0.5)   # 프레임을 높이, 너비를 각각 절반으로 줄임.
 
         tempimg = self.image.copy()
@@ -369,7 +369,7 @@ class Blink_Detector(object):
 class sleep_Blink_Detector(object):
     # 생성자
     def __init__(self):
-        self.video = cv2.VideoCapture(0)                # 웹캠 연결
+        self.video = cv2.VideoCapture("http://127.0.0.1:8000/")                # 웹캠 연결
         self.success, self.image = self.video.read()    # 프레임 읽어오기  success : 연결 성공 여부  image : 프레임 값
 
         # 졸음감지 함수 관련변수
@@ -469,6 +469,8 @@ class sleep_Blink_Detector(object):
     def get_frame(self):
         self.success, self.image = self.video.read()                            # 프레임 읽어오기
         self.image = cv2.resize(self.image, dsize=(650, 550), fx=0.5, fy=0.5)   # 프레임을 높이, 너비를 각각 절반으로 줄임.
+
+        print(self.image)
 
         tempimg = self.image.copy()
         testimg = cv2.resize(tempimg, (150, 150))
