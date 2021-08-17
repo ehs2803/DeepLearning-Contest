@@ -27,7 +27,7 @@ SECRET_KEY = 'fnibvn(cnb-rz7f@g4dwwmokz#cv1(iva)+w&8ca_b8-=+mb2^'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'TaskManager.apps.TaskManagerConfig',
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -71,7 +72,16 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'Hanium_Prj.wsgi.application'
+ASGI_APPLICATION = 'Hanium_Prj.asgi.application'
 
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],
+        },
+    },
+}
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
@@ -89,7 +99,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'task_manager',
-        'USER': 'yh',
+        'USER': 'root',
         'PASSWORD': '#51wldnjs01!',
         'HOST': 'localhost',
         'PORT': '3306',
@@ -134,11 +144,11 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+# STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static")
 ]
 
-# login 성공 시 이동할 url 필요한코드인가(?)
-# LOGIN_REDIRECT_URL='/main'
-
-MESSAGE_LEVEL = messages_constants.ERROR
+# login url
+LOGIN_REDIRECT_URL = ''

@@ -2,20 +2,38 @@ from django.http.response import StreamingHttpResponse
 from TaskManager.sleep import Sleep_Detector
 from TaskManager.sleep import Blink_Detector
 from TaskManager.sleep import sleep_Blink_Detector
-from TaskManager.sleep import D_time, Detected
 from TaskManager.models import *
 
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import check_password
+from django.core.paginator import Paginator
+from django.core.serializers.json import DjangoJSONEncoder
+
+from django.utils import timezone
+import json
 
 # sleep.py 에서 사용자 ID 값 참조를 위한 전역변수
 ID = None
 USERNAME = None
 
+
+# 첫 페이지(index)
+def index(request):
+    user = None
+    if request.session.get('id'):
+        user = User.objects.get(id=request.session.get('id'))
+
+    context = {
+        'user': user
+    }
+    return render(request, "index.html", context=context)
+
+
 # 회원 가입
 def signup(request):
-    global errorMsg
+    global errorMsg     # 에러메시지
+    # POST 요청 시 입력된 데이터(사용자 정보) 저장
     if request.method == 'POST':
         username = request.POST['username']
         email = request.POST['email']
@@ -24,20 +42,24 @@ def signup(request):
         firstname = request.POST['firstname']
         lastname = request.POST['lastname']
 
+        # 회원가입
         try:
+            # 회원가입 실패 시
             if not (username and password and confirm and firstname and lastname and email):
                 errorMsg = '빈칸이 존재합니다!'
             elif password != confirm:
                 errorMsg = '비밀번호가 일치하지 않습니다!'
+            # 회원가입 성공 시 회원정보 저장
             else:
                 User.objects.create_user(
                     username=username,
                     email=email,
                     password=password,
                     first_name=firstname,
-                    last_name=lastname
+                    last_name=lastname,
+                    date_joined=timezone.now()
                 ).save()
-                return redirect('')         # 회원가입 성공했다는 메시지 출력 후 로그인 페이지로 이동
+                return redirect('')         # 회원가입 성공했다는 메시지 출력 후 로그인 페이지로 이동(예정)
         except:
             errorMsg = '빈칸이 존재합니다!'
         return render(request, 'signup.html', {'error': errorMsg})
@@ -47,7 +69,8 @@ def signup(request):
 
 # 로그인
 def login(request):
-    # POST 요청시
+    global errorMsg         # 에러메시지
+    # POST 요청시 입력된 데이터 저장
     if request.method == 'POST':                                        # 로그인 버튼 클릭
         username = request.POST['username']
         password = request.POST['password']
@@ -55,14 +78,14 @@ def login(request):
             if not (username and password):                             # 아이디/비밀번호 중 빈칸이 존재할 때
                 errorMsg = '아이디/비밀번호를 입력하세요.'
             else:                                                       # 아이디/비밀번호 모두 입력됐을 때
-                user = User.objects.get(username=username)              # 등록된 아이디의 정보 가져오기
-                if check_password(password, user.password):             # 등록된 아이디의 비밀번호가 맞으면
-                    request.session['id'] = user.id                     # 세션에 번호 추가
-                    request.session['username'] = user.username         # 세션에 아이디 추가
+                user = User.objects.get(username=username)                  # 등록된 아이디의 정보 가져오기
+                if check_password(password, user.password):                 # 등록된 아이디의 비밀번호가 맞으면
+                    request.session['id'] = user.id                         # 세션에 번호 추가
+                    request.session['username'] = user.username             # 세션에 아이디 추가
                     request.session['email'] = user.email                   # 세션에 이메일 추가
                     request.session['first_name'] = user.first_name         # 세션에 이름 추가
                     request.session['last_name'] = user.last_name           # 세션에 성 추가
-                    return redirect('main/')
+                    return redirect('index')
                 else:                                                   # 등록된 아이디의 비밀번호가 틀리면
                     errorMsg = '비밀번호가 틀렸습니다.'
         except:                                                         # 등록된 아이디의 정보가 없을 때
@@ -75,139 +98,433 @@ def login(request):
 
 # 로그아웃
 def logout(request):
-    del(request.session['id'])    # 세션에서 사용자정보 삭제
-    del(request.seesion['username'])
+    # 사용자 정보 로드
+    if request.session.get('id', None):
+        del(request.session['id'])          # 사용자 번호 제거
+        del(request.session['username'])    # 사용자 아이디 제거
     return redirect('/')            # 메인 페이지(index.html) 리턴
-
-
-def page_not_found(request, exception):
-    """
-    404 Page not found
-    """
-    return render(request, '404.html', {})
 
 
 # 메인 페이지
 def main(request):
-    username = None
+    # 사용자 정보 로드
+    global ID, USERNAME
+    user = None
+    # 로그인 되어있는 경우
     if request.session.get('id', None):
-        id = request.session.get('id', None)
-        username = request.session.get('username', None)
+        user = AuthUser.objects.get(id=request.session.get('id', None))
+        # DB 활용을 위한 전역변수 저장
+        ID = user.id
+        USERNAME = user.username
+    # 로그인 하지 않은 사용자의 경우 로그인 페이지로 이동.
+    else:
+        return redirect('/login')
+
     # html로 세션 데이터 전송
     context = {
-        'id' : id,            # 사용자 번호
-        'username': username  # 사용자 아이디
+        'user': user
     }
     return render(request, "main.html", context=context)
 
 
 # About 페이지
 def about(request):
-    context = {
+    # 사용자 정보 로드
+    user = None
+    if request.session.get('id', None):
+        user = AuthUser.objects.get(id=request.session.get('id', None))
 
+    context = {
+        'user': user
     }
     return render(request, "about.html", context=context)
 
 
 # 마이페이지 임시
 def MyPage(request):
-    id = None
-    username = None
+    # 사용자 정보 로드
+    user = None
+    if request.session.get('id', None):
+        user = AuthUser.objects.get(id=request.session.get('id', None))
+        # 졸음 감지 데이터 로드
+        d_data = list(DrowsinessData.objects.filter(id=user.id).values())
+        d_data_js = json.dumps(d_data, cls=DjangoJSONEncoder)
 
-    if request.session.get('id'):
-        id = AuthUser.objects.get(id=request.session.get('id', None))
-        username = AuthUser.objects.get(username=request.session.get('username', None))
+        # 눈 깜빡임 데이터 로드
+        b_data = list(BlinkData.objects.filter(id=user.id).values())
+        b_data_js = json.dumps(b_data, cls=DjangoJSONEncoder)
     context = {
-        'id':id,
-        'username':username,
+        'user': user,
+        'd_data_js': d_data_js,
+        'b_data_js': b_data_js
     }
     return render(request, 'mypage.html', context=context)
 
 
 # 통합 페이지
 def Task_Manager(request):
-    id = None
-    username = None
-    if request.session.get('id'):
-        id = AuthUser.objects.get(id=request.session.get('id', None))
-        username = AuthUser.objects.get(username=request.session.get('username', None))
-        # 졸음 감지 시 통계 테이블에 저장
-        if (D_time is not None) and Detected:
-            print("Detected :", Detected)
-            print("D_time :", D_time)
-            DrowsinessData.objects.create(
-                id=id,
-                d_time=D_time,
-                username=username
-            )
-            DrowsinessData.save()
-    # 사용자 번호 및 아이디
+    global ID, USERNAME
+    ### 임시 코드 ###
+    user = None
+    new_Todo = None
+    content = None
+
+    if request.session.get('id', None):
+        user = AuthUser.objects.get(id=request.session.get('id', None))
+        todos = TodoList.objects.all()  # Todo 테이블의 모든 데이터를 가져와서
+        ID = user.id
+        USERNAME = user.username
+
     context = {
-        'id':id,
-        'username':username
+        'user': user,
+        'todos': todos
     }
     return render(request, "TaskManager.html", context=context)
 
+# TodoList 추가
+def TaskManager_createTodo(request):
+    # 사용자정보 로드
+    user = None
+    if request.session.get('id',None):                                         # 로그인 중이면
+        user = AuthUser.objects.get(id=request.session.get('id',None))           # 사용자 정보 저장
+
+    #POST 요청시
+    if request.method == 'POST':
+     new_todo = TodoList.objects.create(
+        content=request.POST['todoContent'],
+        uid=user,
+        username=user.username                 # DB의 Todo테이블에 쓰고,
+     ).save()                                  # 저장!
+
+    return redirect('TaskManager')                        # 처리 후 TaskManger 돌아가기
+
+# TodoList 삭제
+def TaskManager_deleteTodo(request):
+    delete_todo = request.GET['delete_id']
+    todo = TodoList.objects.get(id=delete_todo)
+    todo.delete()
+    return redirect('TaskManager')
 
 # 졸음 감지 페이지
 def Drowsiness(request):
-    id = None
-    username = None
-    if request.session.get('id'):
-        id = AuthUser.objects.get(id=request.session.get('id', None))
-        username = AuthUser.objects.get(username=request.session.get('username', None))
-        ID = id
-        USERNAME = username
+    global ID, USERNAME
+    # 사용자 정보 로드
+    user = None
+    todos = None
+    if request.session.get('id', None):
+        user = AuthUser.objects.get(id=request.session.get('id', None))
+        todos = TodoList.objects.all()  # Todo 테이블의 모든 데이터를 가져와서
+        ID = user.id
+        USERNAME = user.username
 
-        # 졸음 감지 시 통계 테이블에 저장
-        if (D_time is not None) and Detected:
-            print("Detected :", Detected)
-            print("D_time :", D_time)
-            DrowsinessData.objects.create(
-                id=id,
-                d_time=D_time,
-                username=username
-            )
-            DrowsinessData.save()
-    # 사용자 번호 및 아이디
     context = {
-        'id':id,
-        'username':username
+        'user': user,
+        'todos': todos
     }
     return render(request, "Drowsiness.html", context=context)
 
+# TodoList 추가
+def Drowsiness_createTodo(request):
+    # 사용자정보 로드
+    user = None
+    if request.session.get('id',None):                                         # 로그인 중이면
+        user = AuthUser.objects.get(id=request.session.get('id',None))           # 사용자 정보 저장
+
+    #POST 요청시
+    if request.method == 'POST':
+     new_todo = TodoList.objects.create(
+        content=request.POST['todoContent'],
+        uid=user,
+        username=user.username                 # DB의 Todo테이블에 쓰고,
+     ).save()                                  # 저장!
+
+    return redirect('Drowsiness')                        # 처리 후 TaskManger 돌아가기
+
+# TodoList 삭제
+def Drowsiness_deleteTodo(request):
+    delete_todo = request.GET['delete_id']
+    todo = TodoList.objects.get(id=delete_todo)
+    todo.delete()
+    return redirect('Drowsiness')
+
+
 # 눈 깜빡임 감지 페이지
 def Blinking(request):
-    id = None
-    username = None
-    if request.session.get('id'):
-        id = request.session.get('id', None)
-        username = request.session.get('username', None)
+    global ID, USERNAME
+    # 사용자 정보 로드
+    user = None
+    todos = None
+    if request.session.get('id', None):
+        user = AuthUser.objects.get(id=request.session.get('id', None))
+        todos = TodoList.objects.all()  # Todo 테이블의 모든 데이터를 가져와서
+        ID = user.id
+        USERNAME = user.username
+
     context = {
-        'id':id,
-        'username':username
+        'user': user,
+        'todos': todos
     }
     return render(request, "Blinking.html", context=context)
 
+# TodoList 추가
+def Blinking_createTodo(request):
+    # 사용자정보 로드
+    user = None
+    if request.session.get('id',None):                                         # 로그인 중이면
+        user = AuthUser.objects.get(id=request.session.get('id',None))           # 사용자 정보 저장
 
-# 게시판 페이지
+    #POST 요청시
+    if request.method == 'POST':
+     new_todo = TodoList.objects.create(
+        content=request.POST['todoContent'],
+        uid=user,
+        username=user.username                 # DB의 Todo테이블에 쓰고,
+     ).save()                                  # 저장!
+
+    return redirect('Blinking')                        # 처리 후 TaskManger 돌아가기
+
+# TodoList 삭제
+def Blinking_deleteTodo(request):
+    delete_todo = request.GET['delete_id']
+    todo = TodoList.objects.get(id=delete_todo)
+    todo.delete()
+    return redirect('Blinking')
+
+
+###############################################################################################
+# 게시판 선택 페이지
 def Board(request):
-    id = None
-    username = None
-    if request.session.get('id'):
-        id = request.session.get('id', None)
-        username = request.session.get('username', None)
+    # 사용자 정보 로드
+    user = None
+    if request.session.get('id', None):
+        user = AuthUser.objects.get(id=request.session.get('id', None))        # 사용자 정보 저장
+
     context = {
-        'id':id,
-        'username':username
+        'user': user
     }
     return render(request, "Board.html", context=context)
 
 
+# Free Board 게시판
+def freeboard(request):
+    # 사용자정보 로드
+    user = None
+    if request.session.get('id'):                                 # 로그인 중이면
+        user = User.objects.get(pk=request.session.get('id'))     # 사용자 정보 저장
+
+    # 페이지정보 로드
+    all_freeboard_posts = Freeboard.objects.all().order_by('-id')       # 모든 자유게시판 데이터를 id순으로 가져오기
+    paginator = Paginator(all_freeboard_posts, 10)                      # 한 페이지에 10개씩 정렬
+    page = int(request.GET.get('p', 1))                                 # p번 페이지 값, p값 없으면 1 반환
+    posts = paginator.get_page(page)                                    # p번 페이지 가져오기
+
+    # 자유 게시판 페이지(freeboard.html) 리턴
+    return render(request, 'freeboard.html',
+                  {'posts': posts, 'user': user})
+
+
+# Free Board 게시글 쓰기
+def freeboard_writing(request):
+    # 사용자정보 로드
+    user = None
+    if request.session.get('id'):                                     # 로그인 중이면
+        user = AuthUser.objects.get(pk=request.session.get('id'))       # 사용자 정보 저장
+    # POST 요청시
+    if request.method =='POST':
+        # 새 게시글 객체 생성
+        new_post = Freeboard.objects.create(
+            title=request.POST['title'],
+            contents=request.POST['contents'],
+            uid=user,
+            username=user.username
+        )
+        return redirect(f'/freeboard_post/{new_post.id}')               # 해당 게시글 페이지로 이동
+
+    # GET 요청시 글쓰기 페이지(writing.html) 리턴
+    return render(request, 'freeboard_writing.html', {'user' : user})
+
+
+# Free Board 게시글 보기
+def freeboard_post(request, pk):
+    # 사용자정보 로드
+    user = None
+    if request.session.get('id'):                                     # 로그인 중이면
+        user = User.objects.get(pk=request.session.get('id'))     # 사용자 정보 저장
+
+    # 게시글 정보 로드
+    post = get_object_or_404(Freeboard, pk=pk)
+    # 댓글 정보 로드
+    comment = CommentFreeboard.objects.filter(pid=pk).order_by('created_date')
+
+    # 해당 게시글 페이지(freeboard_post.html) 반환
+    return render(request, 'freeboard_post.html',
+                  {'post' : post, 'user' : user, 'comment': comment})
+
+
+# Free Board 댓글작성
+def freeboard_comment(request, pk):
+    post = get_object_or_404(Freeboard, pk=pk)
+    # 사용자정보 로드
+    user = None
+    if request.session.get('id'):  # 로그인 중이면
+        user = AuthUser.objects.get(pk=request.session.get('id'))  # 사용자 이름 저장
+
+    # POST 요청시
+    if request.method == 'POST':
+        new_comment = CommentFreeboard.objects.create(
+            pid=Freeboard.objects.get(id=pk),
+            uid=user.id,
+            username=user.username,
+            comments=request.POST['content'],
+        )
+        return redirect(f'/freeboard_post/{post.id}',{'post': post, 'user': user})  # 해당 게시글 페이지로 이동
+
+    return render(request, f'/freeboard_post/{post.id}',{'post': post, 'user': user})
+
+
+# Free Board 게시글 수정
+def freeboard_edit(request, pk):
+    # 사용자정보 로드
+    user = None
+    if request.session.get('id'):                                     # 로그인 중이면
+        user = User.objects.get(pk=request.session.get('id'))     # 사용자 정보 저장
+
+    # 게시글 정보 로드
+    post = Freeboard.objects.get(pk=pk)
+
+    # POST 요청시
+    if request.method == "POST":
+        post.title = request.POST['title']                              # 제목 수정 반영
+        post.contents = request.POST['contents']                        # 내용 수정 반영
+        post.save()                                                     # 수정된 내용 저장
+        return redirect(f'/freeboard_post/{pk}')                        # 해당 게시글 페이지로 이동
+
+    # GET 요청시 게시글 수정 페이지(postedit.html) 리턴
+    return render(request, 'freeboard_edit.html', {'post':post, 'user' : user})
+
+# Free Board 게시글 삭제
+def freeboard_delete(request, pk):
+    post = Freeboard.objects.get(id=pk)                                 # 해당 게시글 테이블 저장
+    post.delete()                                                       # 해당 게시글 삭제
+    return redirect(f'/freeboard')                                      # 자유 게시판 페이지로 이동
+
+
+########################################################################################################################
+# Q & A 게시판
+def questionboard(request):
+    # 사용자정보 로드
+    user = None
+    if request.session.get('id'):                                         # 로그인 중이면
+        user = User.objects.get(pk=request.session.get('id'))         # 사용자 정보 저장
+
+    # 페이지정보 로드
+    all_questionboard_posts = Questionboard.objects.all().order_by('-id')   # 모든 자유게시판 데이터를 id순으로 가져오기
+    paginator = Paginator(all_questionboard_posts, 10)                      # 한 페이지에 10개씩 정렬
+    page = int(request.GET.get('p', 1))                                     # p번 페이지 값, p값 없으면 1 반환
+    posts = paginator.get_page(page)                                        # p번 페이지 가져오기
+
+    # 자유 게시판 페이지(freeboard.html) 리턴
+    return render(request, 'questionboard.html',
+                  {'posts': posts, 'user': user})
+
+
+# Q & A 게시글 쓰기
+def questionboard_writing(request):
+    # 사용자정보 로드
+    user = None
+    if request.session.get('id'):                                         # 로그인 중이면
+        user = AuthUser.objects.get(pk=request.session.get('id'))         # 사용자 정보 저장
+    # POST 요청시
+    if request.method =='POST':
+        # 새 게시글 객체 생성
+        new_post = Questionboard.objects.create(
+            title=request.POST['title'],
+            contents=request.POST['contents'],
+            uid=user,
+            username=user.username
+        )
+        return redirect(f'/questionboard_post/{new_post.id}')               # 해당 게시글 페이지로 이동
+
+    # GET 요청시 글쓰기 페이지(writing.html) 리턴
+    return render(request, 'questionboard_writing.html', {'user' : user})
+
+
+# Q & A 게시글 보기
+def questionboard_post(request, pk):
+    # 사용자정보 로드
+    user = None
+    if request.session.get('id'):                                         # 로그인 중이면
+        user = User.objects.get(pk=request.session.get('id'))         # 사용자 정보 저장
+
+    # 게시글 정보 로드
+    post = get_object_or_404(Questionboard, pk=pk)
+
+    # 댓글 정보 로드
+    comment = CommentQuestionboard.objects.filter(pid=pk).order_by('created_date')
+
+    # 해당 게시글 페이지(freeboard_post.html) 리턴
+    return render(request, 'questionboard_post.html',
+                  {'post' : post, 'user' : user, 'comment': comment})
+
+
+# Q & A 댓글작성
+def questionboard_comment(request, pk):
+    post = get_object_or_404(Questionboard, pk=pk)
+    # 사용자정보 로드
+    username = None
+    user = None
+    if request.session.get('id'):  # 로그인 중이면
+        user = AuthUser.objects.get(pk=request.session.get('id'))  # 사용자 이름 저장
+
+    # POST 요청시
+    if request.method == 'POST':
+        new_comment = CommentQuestionboard.objects.create(
+            pid=Questionboard.objects.get(id=pk),
+            uid=user.id,
+            username=user.username,
+            comments=request.POST['content'],
+        )
+        return redirect(f'/questionboard_post/{post.id}',{'post' : post, 'username' : username})  # 해당 게시글 페이지로 이동
+
+    return render(request, f'/questionboard_post/{post.id}',{'post' : post, 'username' : username})
+
+
+# Q & A 게시글 수정
+def questionboard_edit(request, pk):
+    # 사용자정보 로드
+    user = None
+    if request.session.get('id'):                                         # 로그인 중이면
+        user = User.objects.get(pk=request.session.get('id'))         # 사용자 정보 저장
+
+    # 게시글 정보 로드
+    post = Questionboard.objects.get(pk=pk)
+
+    # POST 요청시
+    if request.method=="POST":
+        post.title = request.POST['title']                                  # 제목 수정 반영
+        post.contents = request.POST['contents']                            # 내용 수정 반영
+        post.save()                                                         # 수정된 내용 저장
+        return redirect(f'/questionboard_post/{pk}')                        # 해당 게시글 페이지로 이동
+    # GET 요청시 게시글 수정 페이지(postedit.html) 리턴
+    return render(request, 'questionboard_edit.html', {'post':post, 'user' : user})
+
+# Q & A 게시글 삭제
+def questionboard_delete(request, pk):
+    post = Questionboard.objects.get(id=pk)                                 # 해당 게시글 테이블 저장
+    post.delete()                                                           # 해당 게시글 삭제
+    return redirect(f'/questionboard')                                      # 자유 게시판 페이지로 이동
+######################################################################################################
+
+
 # 졸음 해소 스트레칭 동영상 페이지
 def tip(request):
-    context={
+    # 사용자 정보 로드
+    user = None
+    if request.session.get('id'):
+        user = AuthUser.objects.get(id=request.session.get('id'))           # 사용자 정보 저장
 
+    context = {
+        'user': user
     }
     return render(request, "tip.html", context=context)
 
@@ -233,3 +550,15 @@ def sleep_detector(request):
 def blink_detector(request):
     return StreamingHttpResponse(gen(Blink_Detector()),
                                  content_type='multipart/x-mixed-replace; boundary=frame')
+
+
+############################################################################################
+def test(request):
+    return render(request, 'test.html')
+
+
+def room(request, room_name):
+    context = {
+        'room_name': room_name
+    }
+    return render(request, 'room.html', context=context)

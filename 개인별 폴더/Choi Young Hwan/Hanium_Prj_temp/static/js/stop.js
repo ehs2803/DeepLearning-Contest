@@ -11,16 +11,15 @@ var stopBtn = document.getElementById('testStopBtn')
 var recordList = document.getElementById('testRecordList')
 
 startBtn.addEventListener('click', function() {
-        // RECORD
-    if(this.innerText == 'RECORD' && milisec) {
+    // RECORD
+    if (this.innerText == 'RECORD' && milisec) {
         console.log(min, sec, milisec)
         var li = document.createElement('li')
         li.style.color = "black"
         li.innerText = min + ' : ' + sec + ' : ' + milisec
-        if(! recordList.firstChild) {
+        if (!recordList.firstChild) {
             recordList.append(li)
-        }
-        else {
+        } else {
             recordList.insertBefore(li, recordList.firstChild)
         }
         return false
@@ -28,10 +27,9 @@ startBtn.addEventListener('click', function() {
 
     this.innerText = 'RECORD'
 
-    if(!stTime) {
+    if (!stTime) {
         stTime = Date.now() // 최초 START
-    }
-    else {
+    } else {
         stopBtn.innerText = 'STOP'
         stTime += (Date.now() - endTime) // RESTART
     }
@@ -46,19 +44,18 @@ startBtn.addEventListener('click', function() {
         document.getElementById('postTestMin').innerText = min
         document.getElementById('postTestSec').innerText = sec
         document.getElementById('postTestMilisec').innerText = milisec
-        }, 1)
-    })
+    }, 1)
+})
 
 stopBtn.addEventListener('click', function() {
-    if(timerStart) {
+    if (timerStart) {
         clearInterval(timerStart) // STOP
 
-        if(this.innerText == 'STOP') {
+        if (this.innerText == 'STOP') {
             endTime = Date.now()
             this.innerText = 'RESET'
             startBtn.innerText = 'RESTART'
-        }
-        else { // RESET
+        } else { // RESET
             stTime = 0
             min = 0
             sec = 0
@@ -77,5 +74,5 @@ stopBtn.addEventListener('click', function() {
 })
 
 function addZero(num) {
-    return (num < 10 ? '0'+num : ''+num)
+    return (num < 10 ? '0' + num : '' + num)
 }
