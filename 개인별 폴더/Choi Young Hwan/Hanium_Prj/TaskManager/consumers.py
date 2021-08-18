@@ -8,10 +8,17 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.accept()
 
     async def receive(self, text_data):
-        data = text_data
-        print(type(data))
-        await self.send("echo : " + data)
+        self.data = ''
+        self.data = text_data
+        print(type(self.data))
+        await self.send("echo :", self.data)
 
-        data = data[22:]
-        temp = base64.urlsafe_b64decode(data)
-        print(type(temp))
+        # data slicing(base64 문자열 앞에 붙는 필요 없는 문자열제거)
+        self.data = self.data[22:]
+        # base64 문자열 디코딩(str -> bytes)
+        self.img = b''
+        self.img = base64.urlsafe_b64decode(self.data)
+        print(type(self.img))
+
+    async def send_frame(self):
+        return self.img

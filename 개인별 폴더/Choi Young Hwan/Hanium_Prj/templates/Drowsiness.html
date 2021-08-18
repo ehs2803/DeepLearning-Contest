@@ -6,7 +6,7 @@
 <body style="background-color:#fafafa">
     <div class="all" style="background-color: #ffffff">
         <div class="cam">
-            <img src="{% url 'sleep_detector' %}">
+            <video autoplay></video>
         </div>
         <div class="stw">
             <div>
@@ -89,5 +89,34 @@
     </div>
     <script src="{% static 'js/clock.js' %}"></script>
     <script src="{% static 'js/stop.js' %}"></script>
+    <script>
+    // get video dom element
+    const video = document.querySelector('video');
+    // request access to webcam
+    navigator.mediaDevices.getUserMedia({ video: { width: 426, height: 240 } }).then((stream) => video.srcObject = stream);
+    // returns a frame encoded in base64
+    const getFrame = () => {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+        const data = canvas.toDataURL('image/jpeg');
+        return data;
+    }
+    WS_URL = 'ws://localhost:8000/ws/Drowsiness'
+    const FPS = 3;
+    const ws = new WebSocket(WS_URL)
+    // 웹소켓 연결 시
+    ws.onopen = () => {
+        console.log(`Connected to ${WS_URL}`);
+        setInterval(() => {
+            ws.send(getFrame());
+        }, 1000 / FPS);
+    }
+    // 웹소켓 연결 해제
+    ws.onclose = () => {
+        console.log(`Connection to ${WS_URL} has closed`);
+    }
+    </script>
 </body>
 {% endblock %}

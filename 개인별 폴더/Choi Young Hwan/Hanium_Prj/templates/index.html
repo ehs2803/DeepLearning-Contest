@@ -1,40 +1,13 @@
+{% extends "base.html" %}
 {% load static %}
+
+{% block content %}
 
 <head>
     <title>Task Manager</title>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="stylesheet" href="{% static 'css/mains.css' %}" />
 </head>
 
 <body>
-
-		<!-- Header -->
-			<header id="header">
-				<nav class="left">
-					<a href="#menu"><span>Menu</span></a>
-				</nav>
-				<a href="{% url 'index' %}" class="logo">Task Manager</a>
-				<nav class="right">
-					<a class="button alt" href="login" >Log in</a>
-					<a class="button alt">{{user.username}}님</a>
-					<a class="button alt" href="{% url 'logout' %}">Logout</a>
-
-				</nav>
-			</header>
-
-		<!-- Menu -->
-			<nav id="menu">
-				<ul class="links">
-					<li><a href="main">Home</a></li>
-					<li><a href="freeboard">게시판</a></li>
-					<li><a href="questionboard">Q & A</a></li>
-					<li><a href="mypage">마이페이지</a></li>
-				</ul>
-				<ul class="actions vertical">
-					<li><a href="#" class="button fit">Login</a></li>
-				</ul>
-			</nav>
 
 		<!-- Banner -->
 			<section id="banner">
@@ -79,16 +52,10 @@
 		<!-- Two -->
 			<section id="two" class="wrapper style1 special">
 				<div class="inner">
-					<h2>About</h2>
+					<h2>Developed instrument</h2>
 					<figure>
 					    <blockquote>
 					        "업무중 졸음이 쏟아져 나오는 상황이 한번쯤은 있었을 것이다. 이런 경우를 <br /> 방지 하기 위한 졸음 방지 기능이 핵심이고 여러 부가기능이 담긴 프로젝트를 구상하였다."
-							<br><br>개발 팀원 : 이지상, 정영도, 오수지, 이현수, 최영환
-							<br>개발 기간 : 2021년 2월 4일 ~
-							<br>핵심 기술 : 딥러닝 모델, 영상처리
-							<br>사용 언어 : html, css, javascript, pytho
-							<br>기대 효과 : 졸음 방지, 안구 건조증 예방
-							<br>개발 프레임워크 : Django
 					    </blockquote>
 					    <footer>
 					        <cite class="author">Seokyeong University</cite>
@@ -99,7 +66,6 @@
 			</section>
 
 		<!-- Three -->
-		<!--
 			<section id="three" class="wrapper">
 				<div class="inner flex flex-3">
 					<div class="flex-item box">
@@ -131,27 +97,7 @@
 					</div>
 				</div>
 			</section>
--->
-		<!-- Footer -->
-			<footer id="footer">
-				<div class="inner">
-					<h2>Get In Touch</h2>
-					<ul class="actions">
-						<li><span class="icon fa-phone"></span> <a href="#">(000) 000-0000</a></li>
-						<li><span class="icon fa-envelope"></span> <a href="#">jyd12190@skuniv.ac.kr</a></li>
-						<li><span class="icon fa-map-marker"></span> 124 Seogyeong-ro, Seongbuk-gu, Seoul</li>
-					</ul>
-				</div>
-				<div class="copyright">
-					&copy; Untitled. Design <a href="https://templated.co">TEMPLATED</a>. Images <a href="https://unsplash.com">Unsplash</a>.
-				</div>
-			</footer>
-
-		<!-- Scripts -->
-			<script src="{% static 'js/jquery.min.js' %}"></script>
-			<script src="{% static 'js/jquery.scrolly.min.js' %}"></script>
-			<script src="{% static 'js/skel.min.js' %}"></script>
-			<script src="{% static 'js/util.js' %}"></script>
-			<script src="{% static 'js/mains.js' %}"></script>
 
 </body>
+
+{%endblock %}

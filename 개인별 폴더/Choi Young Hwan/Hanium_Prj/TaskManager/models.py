@@ -89,16 +89,6 @@ class Questionboard(models.Model):
         self.hits += 1
         self.save()
 
-# 일일 스케줄러 테이블
-class DailyTodo(models.Model):
-    uid = models.OneToOneField(AuthUser, models.DO_NOTHING, db_column='uid')
-    username = models.CharField(max_length=150)
-    starttime = models.DateTimeField(auto_now_add=True, null=False)
-    content = models.TextField(blank=True, null=False)
-
-    class Meta:
-        managed = False
-        db_table = 'daily_todo'
 
 # 자유게시판 댓글 테이블
 class CommentFreeboard(models.Model):
@@ -132,11 +122,21 @@ class TodoList(models.Model):
     uid = models.ForeignKey(AuthUser, models.DO_NOTHING, db_column='uid')
     username = models.CharField(max_length=150)
     content = models.TextField(blank=True, null=False)
-    is_complete = models.IntegerField(blank=True, null=True)
-    end_date = models.DateField(db_column='END_DATE', blank=True, null=True)
+    reg_time = models.TextField(db_column='reg_time', blank=True, null=True)
+    reg_date = models.TextField(db_column='reg_date', blank=True, null=True)
 
     class Meta:
         managed = False
         db_table = 'todo_list'
 
+# CompleteTodo 테이블
+class CompleteList(models.Model):
+    uid = models.ForeignKey(AuthUser, models.DO_NOTHING, db_column='uid')
+    username = models.CharField(max_length=150)
+    content = models.TextField(blank=True, null=True)
+    end_date = models.TextField(db_column='END_DATE', null=False)  # Field name made lowercase.
+    end_time = models.TextField(db_column='END_TIME', null=False)  # Field name made lowercase.
 
+    class Meta:
+        managed = False
+        db_table = 'complete_list'

@@ -22,7 +22,7 @@ model2 = load_model(os.path.join(settings.BASE_DIR, 'data/Front_and_Top_2021_07_
 class Sleep_Detector(object):
     # 생성자
     def __init__(self):
-        self.video = cv2.VideoCapture(cv2.CAP_DSHOW+0)                # 웹캠 연결
+        self.video = cv2.VideoCapture(0)                # 웹캠 연결
         self.success, self.image = self.video.read()    # 프레임 읽어오기 success : 연결 성공 여부   image : 프레임 값
 
         # 졸음감지 함수 관련변수

@@ -51,29 +51,49 @@
             <h1>TO DO LIST</h1>
             <p>공부할 주제를 기록해 보세요</p>
             <p>공부가 끝난 것은 클릭해서 삭제할 수 있습니다.</p>
-            <form action="./createTodo/" method="POST">
-                {% csrf_token %}
+            <form action="./createTodo/" method="POST">{% csrf_token %}
                 <div class="input-group">
-                    <input type="text" id="todoContent" name="todoContent" class="input">
+                    <input type="text" id="todoContent" name="todoContent" class="form-control">
+                    <input type='date' id="reg_date" name="reg_date">
+                    <input type='time' id="reg_time" name="reg_time"></p>
                     <span class="input-group-btn">
-                        <button class="button" type="submit">입력</button>
+                        <button class="btn btn-default" type="submit">입력</button>
                     </span>
                 </div>
             </form>
-            <hr>
+            <!-- 여기는 미완료 투두리스트! -->
             <div class="toDoDiv">
                 <ul class="list-group">
                     {% for todo in todos %}
-                    <form action="./deleteTodo/" method="GET">
+                    <form action="./completeTodo/" method="GET">
+                        {% csrf_token %}
                         <div class="input-group" name='todo1'>
-                            <li class="list-group-item">{{todo.content}}</li>
+                            <li class="list-group-item">{{todo.content}} - {{ todo.reg_date }} / {{ todo.reg_time }}</li>
                             <span class="input-group-addon">
-                                <button type="submit" class="button" name="delete_id" value={{ todo.id }}>삭제</button>
+                                <button type="submit" class="custom-btn btn btn-danger" name="complete_id" value={{ todo.id }}>완료</button>
                             </span>
                         </div>
                     </form>
                     {% endfor %}
                 </ul>
+            </div>
+            <!-- 여기는 완료된 투두리스트! -->
+            <div class="toDoDiv2">
+                <ul class="list-group">
+                    {% for todo in comp_todos %}
+                    <form action="./deleteTodo/" method="GET">
+                        {% csrf_token %}
+                        <div class="input-group" name='todo2'>
+                            <li class="list-group-item">{{ todo.content }} - {{ todo.end_date }} / {{ todo.end_time }}</li>
+                            <span class="input-group-addon">
+                                <button type="submit" class="custom-btn btn btn-danger" name="delete_id" value={{ todo.id }}>삭제</button>
+                            </span>
+                        </div>
+                    </form>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div>
             </div>
         </div>
         <div class="how">
