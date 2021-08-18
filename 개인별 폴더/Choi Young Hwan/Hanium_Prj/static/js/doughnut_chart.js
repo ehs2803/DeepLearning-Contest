@@ -1,29 +1,72 @@
-// 그래프의 label
-labels = ['Red', 'Blue', 'Yellow']
+let d_data_js = JSON.parse("{{ d_data_js | escapejs }}");
 
-// 그래프의 데이터
+var dictObject_d = {}
+for (var i = 0; i < d_data_js.length; i++) {
+    if (String(d_data_js[i].d_time).substr(0, 10) in dictObject_d) {
+        dictObject_d[String(d_data_js[i].d_time).substr(0, 10)] += 1
+    } else {
+        dictObject_d[String(d_data_js[i].d_time).substr(0, 10)] = 1
+    }
+}
+
+label = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20',
+    '21', '22', '23', '24'
+]
+backgroundColors = ['rgb(255, 0, 0)', 'rgb(255, 187, 0)', 'rgb(171, 242, 0)', 'rgb(0, 216, 255)',
+    'rgb(0, 89, 255)', 'rgb(255, 9, 221)', 'rgb(242, 203, 97)', 'rgb(135, 229, 132)', 'rgb(105, 109, 255)',
+    'rgb(5, 9, 132)', 'rgb(5, 9, 132)', 'rgb(5, 9, 132)', 'rgb(5, 9, 132)', 'rgb(5, 9, 132)', 'rgb(5, 9, 132)',
+    'rgb(5, 9, 132)', 'rgb(5, 9, 132)', 'rgb(5, 9, 132)', 'rgb(5, 9, 132)', 'rgb(5, 9, 132)', 'rgb(5, 9, 132)',
+    'rgb(5, 9, 132)', 'rgb(5, 9, 132)', 'rgb(5, 9, 132)'
+]
+
+var dictObject_d_h = {}
+tempdate = '2021-08-01'
+for (var i = 0; i < d_data_js.length; i++) {
+    if (String(d_data_js[i].d_time).substr(0, 10) === tempdate) {
+        if (String(d_data_js[i].d_time).substr(11, 2) in dictObject_d_h) {
+            dictObject_d_h[String(d_data_js[i].d_time).substr(11, 2)] += 1;
+        } else {
+            dictObject_d_h[String(d_data_js[i].d_time).substr(11, 2)] = 1;
+        }
+    }
+}
+
+labels_temp = []
+data_temp = []
+background_temp = []
+
+var i = 0;
+if (tempdate in dictObject_d) {
+    for (var key in dictObject_d_h) {
+        labels_temp.push(key);
+        data_temp.push(dictObject_d_h[key]);
+        background_temp.push(backgroundColors[i]);
+        i += 1;
+    }
+} else {
+    labels_temp.push("데이터 없음");
+    data_temp.push(1);
+    background_temp.push('rgb(0,0,0)');
+}
+
 const data = {
-    labels: labels,
+    labels: labels_temp,
     datasets: [{
-        label: 'Number of drowsiness',
-        data: [300, 50, 100], // 졸음 데이터
-        backgroundColor: [
-            'rgb(255, 99, 132)',
-            'rgb(54, 162, 235)',
-            'rgb(255, 205, 86)'
-        ],
+        label: 'My First Dataset',
+
+        data: data_temp,
+
+        backgroundColor: background_temp,
         hoverOffset: 4
     }]
 };
 
-// 차트 설정
-const d_config = {
+const config = {
     type: 'doughnut',
     data: data,
 };
 
-// 차트 객체 생성
 var dChart = new Chart(
     document.getElementById('dChart'),
-    d_config
+    config
 );

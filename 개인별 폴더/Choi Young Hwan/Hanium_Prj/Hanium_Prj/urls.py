@@ -52,4 +52,13 @@ urlpatterns = [
     path('questionboard_edit/<int:pk>', views.questionboard_edit, name='questionboard_edit'),
     path('questionboard_delete/<int:pk>', views.questionboard_delete, name='questionboard_delete'),
     path('questionboard_comment/<int:pk>', views.questionboard_comment, name='questionboard_comment'),
+    ## Todolist Test ##
+    path('TaskManager/createTodo/', views.TaskManager_createTodo, name='createTodo'),
+    path('TaskManager/deleteTodo/', views.TaskManager_deleteTodo, name='deleteTodo'),
+    path('Drowsiness/createTodo/', views.Drowsiness_createTodo, name='createTodo'),
+    path('Drowsiness/deleteTodo/', views.Drowsiness_deleteTodo, name='deleteTodo'),
+    path('Blinking/createTodo/', views.Blinking_createTodo, name='createTodo'),
+    path('Blinking/deleteTodo/', views.Blinking_deleteTodo, name='deleteTodo'),
+    # channels test #
+    path('test/', views.test, name='test'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

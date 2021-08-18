@@ -1,6 +1,4 @@
-{% extends "base.html" %}
-{% block content %}
-{% load static %}
+{% extends "base.html" %}{% block content %}{% load static %}
 <title>TaskManager</title>
 
 <body style="background-color:#fafafa">
@@ -48,20 +46,32 @@
             </div>
         </div>
         <div class="scheduler">
-            <h1>Scheduler</h1>
+            <h1>TO DO LIST</h1>
             <p>공부할 주제를 기록해 보세요</p>
             <p>공부가 끝난 것은 클릭해서 삭제할 수 있습니다.</p>
-            <form method="POST" action="">
+            <form action="./createTodo/" method="POST">
                 {% csrf_token %}
-                <input class="input" type="text" name="content" id="content" autofocus>
-                <button class="button" type="submit" onclick="return Scheduler()">추가</button>
+                <div class="input-group">
+                    <input type="text" id="todoContent" name="todoContent" class="input">
+                    <span class="input-group-btn">
+                        <button class="button" type="submit">입력</button> </span>
+                </div>
             </form>
             <hr>
-            <ul>
-                {% for list in TodoList %}
-                <div>{{ list }}</div>
-                {% endfor %}
-            </ul>
+            <div class="toDoDiv">
+                <ul class="list-group">
+                    {% for todo in todos %}
+                    <form action="./deleteTodo/" method="GET">
+                        <div class="input-group" name='todo1'>
+                            <li class="list-group-item">{{todo.content}}</li>
+                            <span class="input-group-addon">
+                                <button type="submit" class="button" name="delete_id" value={{ todo.id }}>삭제</button>
+                            </span>
+                        </div>
+                    </form>
+                    {% endfor %}
+                </ul>
+            </div>
         </div>
         <div class="how">
             <p>※ 올바른 사용방법 ※</p>

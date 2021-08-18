@@ -168,43 +168,84 @@ def Task_Manager(request):
     user = None
     new_Todo = None
     content = None
+
     if request.session.get('id', None):
         user = AuthUser.objects.get(id=request.session.get('id', None))
-        new_Todo = DailyTodo.objects.filter(uid=user.id)
+        todos = TodoList.objects.all()  # Todo 테이블의 모든 데이터를 가져와서
         ID = user.id
         USERNAME = user.username
 
-    # POST 요청 시
-    if request.method == 'POST':
-        content = request.POST['content']
-        # 일일 스케줄러에 할 일 추가
-        DailyTodo.objects.create(
-            uid=user,
-            username=user.username,
-            content=content
-        ).save()
-
     context = {
         'user': user,
-        'TodoList': new_Todo
+        'todos': todos
     }
     return render(request, "TaskManager.html", context=context)
 
+# TodoList 추가
+def TaskManager_createTodo(request):
+    # 사용자정보 로드
+    user = None
+    if request.session.get('id',None):                                         # 로그인 중이면
+        user = AuthUser.objects.get(id=request.session.get('id',None))           # 사용자 정보 저장
+
+    #POST 요청시
+    if request.method == 'POST':
+     new_todo = TodoList.objects.create(
+        content=request.POST['todoContent'],
+        uid=user,
+        username=user.username                 # DB의 Todo테이블에 쓰고,
+     ).save()                                  # 저장!
+
+    return redirect('TaskManager')                        # 처리 후 TaskManger 돌아가기
+
+# TodoList 삭제
+def TaskManager_deleteTodo(request):
+    delete_todo = request.GET['delete_id']
+    todo = TodoList.objects.get(id=delete_todo)
+    todo.delete()
+    return redirect('TaskManager')
 
 # 졸음 감지 페이지
 def Drowsiness(request):
     global ID, USERNAME
     # 사용자 정보 로드
     user = None
+    todos = None
     if request.session.get('id', None):
         user = AuthUser.objects.get(id=request.session.get('id', None))
+        todos = TodoList.objects.all()  # Todo 테이블의 모든 데이터를 가져와서
         ID = user.id
         USERNAME = user.username
 
     context = {
-        'user': user
+        'user': user,
+        'todos': todos
     }
     return render(request, "Drowsiness.html", context=context)
+
+# TodoList 추가
+def Drowsiness_createTodo(request):
+    # 사용자정보 로드
+    user = None
+    if request.session.get('id',None):                                         # 로그인 중이면
+        user = AuthUser.objects.get(id=request.session.get('id',None))           # 사용자 정보 저장
+
+    #POST 요청시
+    if request.method == 'POST':
+     new_todo = TodoList.objects.create(
+        content=request.POST['todoContent'],
+        uid=user,
+        username=user.username                 # DB의 Todo테이블에 쓰고,
+     ).save()                                  # 저장!
+
+    return redirect('Drowsiness')                        # 처리 후 TaskManger 돌아가기
+
+# TodoList 삭제
+def Drowsiness_deleteTodo(request):
+    delete_todo = request.GET['delete_id']
+    todo = TodoList.objects.get(id=delete_todo)
+    todo.delete()
+    return redirect('Drowsiness')
 
 
 # 눈 깜빡임 감지 페이지
@@ -212,15 +253,42 @@ def Blinking(request):
     global ID, USERNAME
     # 사용자 정보 로드
     user = None
+    todos = None
     if request.session.get('id', None):
         user = AuthUser.objects.get(id=request.session.get('id', None))
+        todos = TodoList.objects.all()  # Todo 테이블의 모든 데이터를 가져와서
         ID = user.id
         USERNAME = user.username
 
     context = {
-        'user': user
+        'user': user,
+        'todos': todos
     }
     return render(request, "Blinking.html", context=context)
+
+# TodoList 추가
+def Blinking_createTodo(request):
+    # 사용자정보 로드
+    user = None
+    if request.session.get('id',None):                                         # 로그인 중이면
+        user = AuthUser.objects.get(id=request.session.get('id',None))           # 사용자 정보 저장
+
+    #POST 요청시
+    if request.method == 'POST':
+     new_todo = TodoList.objects.create(
+        content=request.POST['todoContent'],
+        uid=user,
+        username=user.username                 # DB의 Todo테이블에 쓰고,
+     ).save()                                  # 저장!
+
+    return redirect('Blinking')                        # 처리 후 TaskManger 돌아가기
+
+# TodoList 삭제
+def Blinking_deleteTodo(request):
+    delete_todo = request.GET['delete_id']
+    todo = TodoList.objects.get(id=delete_todo)
+    todo.delete()
+    return redirect('Blinking')
 
 
 ###############################################################################################
@@ -482,3 +550,9 @@ def sleep_detector(request):
 def blink_detector(request):
     return StreamingHttpResponse(gen(Blink_Detector()),
                                  content_type='multipart/x-mixed-replace; boundary=frame')
+
+
+############################################################################################
+# websocket test view
+def test(request):
+    return render(request, 'test.html')

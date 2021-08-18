@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'TaskManager.apps.TaskManagerConfig',
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -71,7 +72,16 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'Hanium_Prj.wsgi.application'
+ASGI_APPLICATION = 'Hanium_Prj.asgi.application'
 
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],
+        },
+    },
+}
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
@@ -91,7 +101,7 @@ DATABASES = {
         'NAME': 'task_manager',
         'USER': 'yh',
         'PASSWORD': '#51wldnjs01!',
-        'HOST': '3.37.253.183',
+        'HOST': 'localhost',
         'PORT': '3306',
     }
 }

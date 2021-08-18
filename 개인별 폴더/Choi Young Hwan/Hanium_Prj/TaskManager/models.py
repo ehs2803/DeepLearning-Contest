@@ -127,4 +127,16 @@ class CommentQuestionboard(models.Model):
         db_table = 'comment_questionboard'
         unique_together = (('pid', 'uid', 'created_date'),)
 
+# To Do 테이블
+class TodoList(models.Model):
+    uid = models.ForeignKey(AuthUser, models.DO_NOTHING, db_column='uid')
+    username = models.CharField(max_length=150)
+    content = models.TextField(blank=True, null=False)
+    is_complete = models.IntegerField(blank=True, null=True)
+    end_date = models.DateField(db_column='END_DATE', blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'todo_list'
+
 
