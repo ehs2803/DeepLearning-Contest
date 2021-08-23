@@ -12,6 +12,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 
 from django.utils import timezone
 import json
+import TaskManager.consumers
 
 # sleep.py 에서 사용자 ID 값 참조를 위한 전역변수
 ID = None
@@ -168,6 +169,7 @@ def Task_Manager(request):
     user = None
     new_Todo = None
     content = None
+    TaskManager.consumers.division = 1
 
     if request.session.get('id', None):
         user = AuthUser.objects.get(id=request.session.get('id', None))
@@ -211,6 +213,7 @@ def Drowsiness(request):
     # 사용자 정보 로드
     user = None
     todos = None
+    TaskManager.consumers.division=2
     if request.session.get('id', None):
         user = AuthUser.objects.get(id=request.session.get('id', None))
         todos = TodoList.objects.all()  # Todo 테이블의 모든 데이터를 가져와서
@@ -254,6 +257,9 @@ def Blinking(request):
     # 사용자 정보 로드
     user = None
     todos = None
+    TaskManager.consumers.division = 3
+
+
     if request.session.get('id', None):
         user = AuthUser.objects.get(id=request.session.get('id', None))
         todos = TodoList.objects.all()  # Todo 테이블의 모든 데이터를 가져와서
