@@ -533,32 +533,3 @@ def tip(request):
         'user': user
     }
     return render(request, "tip.html", context=context)
-
-
-# 카메라 연결
-def gen(camera):
-    while True:
-        frame = camera.get_frame()
-        yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
-
-
-def task_manager(request):
-    return StreamingHttpResponse(gen(sleep_Blink_Detector()),
-                                 content_type='multipart/x-mixed-replace; boundary=frame')
-
-
-def sleep_detector(request):
-    return StreamingHttpResponse(gen(Sleep_Detector()),
-                                 content_type='multipart/x-mixed-replace; boundary=frame')
-
-
-def blink_detector(request):
-    return StreamingHttpResponse(gen(Blink_Detector()),
-                                 content_type='multipart/x-mixed-replace; boundary=frame')
-
-
-############################################################################################
-# websocket test view
-def test(request):
-    return render(request, 'test.html')

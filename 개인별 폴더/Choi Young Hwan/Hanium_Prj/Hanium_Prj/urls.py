@@ -35,10 +35,6 @@ urlpatterns = [
     path("Board/", views.Board, name="Board"),                              # 게시판화면 url 연결
     path("tip/", views.tip, name="tip"),
 
-    path('task_manager', views.task_manager, name='task_manager'),          # 통합기능 url 연결
-    path('sleep_detector', views.sleep_detector, name='sleep_detector'),    # 졸음감지 url 연결
-    path('blink_detector', views.blink_detector, name='blink_detector'),    # 눈깜빡임 url 연결
-
     path('freeboard/', views.freeboard, name='freeboard'),
     path('freeboard_writing/', views.freeboard_writing, name='freeboard_writing'),
     path('freeboard_post/<int:pk>', views.freeboard_post, name='freeboard_post'),
@@ -59,6 +55,4 @@ urlpatterns = [
     path('Drowsiness/deleteTodo/', views.Drowsiness_deleteTodo, name='deleteTodo'),
     path('Blinking/createTodo/', views.Blinking_createTodo, name='createTodo'),
     path('Blinking/deleteTodo/', views.Blinking_deleteTodo, name='deleteTodo'),
-    # channels test #
-    path('test/', views.test, name='test'),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

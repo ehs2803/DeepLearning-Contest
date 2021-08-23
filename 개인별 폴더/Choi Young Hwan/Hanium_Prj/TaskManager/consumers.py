@@ -26,23 +26,25 @@ frame = None
 check=False
 thread_flag = False
 
-division=0
+# threading 을 위한 변수
+# 1이면 통합 기능, 2이면 졸음 감지 기능 , 3이면 눈 깜빡임 기능
+division = 0
 
 # 졸음감지 함수 관련변수
-start_sleep = 0  # 졸음감지 시간측정변수
-check_sleep = False  # 눈동자 감김 여부
+start_sleep = 0         # 졸음감지 시간 측정 변수
+check_sleep = False     # 눈동자 감김 여부
 
 # 눈깜빡임 감지 함수 관련변수
-start_blink = time.time()                  # 눈깜빡임 횟수 시간측정 변수
-eye_count_min = 0                          # 눈깜빡임 횟수 저장변수
+start_blink = time.time()                  # 눈깜빡임 횟수 시간 측정 변수
+eye_count_min = 0                          # 눈깜빡임 횟수 저장 변수
 check_blink = False                        # 눈감김 여부
 
 pred_r = 0.0                               # 오른쪽 눈 예측 값
 pred_l = 0.0                               # 왼쪽 눈 예측 값
 
-front_back = 0.0
-check_sleep_fb = False
-start_sleep_fb = 0
+front_back = 0.0                           # 정면 / 정수리 예측 값
+check_sleep_fb = False                     # 정면 / 정수리 여부
+start_sleep_fb = 0                         # 졸음감지 시간 측정 변수
 
 
 
@@ -97,15 +99,19 @@ def sleepDetection():
 
 def sleepDetection_frot_back():
     global front_back, check_sleep_fb, start_sleep_fb
+    # 정수리로 판단되는 경우
     if front_back < 0.01:
+        # 감지된 적이 있는 경우
         if check_sleep_fb == True:
-            if time.time() - start_sleep_fb > 5:
+            if time.time() - start_sleep_fb > 5:    # 5초 이상 유지된 경우
                 start_sleep_fb = time.time()
-                check_sleep_fb = False
-                return True
+                check_sleep_fb = False              # loop를 위해 False 로 초기화
+                return True                         # 졸음 감지 변수를 True로 변경
+        # 감지된 적이 없는 경우
         else:
             check_sleep_fb = True
             start_sleep_fb = time.time()
+    # 정면으로 판단되는 경우
     else:
         check_sleep_fb = False
 
@@ -130,8 +136,8 @@ def get_sleep():
         tts_s_path = 'data/sleep_notification.mp3'      # 음성 알림 파일
         playsound(tts_s_path)      # 음성으로 알림
         # DB에 정보 삽입
-        cursor = connection.cursor()
-        now=timezone.localtime()
+        cursor = connection.cursor()        # DB 연결 객체 생성
+        now = timezone.localtime()          # 현재 시간(서울 시간)
         formatted_data = now.strftime('%Y=%m-%d %H:%M:%S')
         cursor.execute('insert into drowsiness_data values(%s,%s,%s)',
                         (views.ID, formatted_data, views.USERNAME))
@@ -141,10 +147,11 @@ def get_sleep():
 def get_sleep_front_back():
     if sleepDetection_frot_back():
         tts_s_path = 'data/sleep_notification.mp3'      # 음성 알림 파일
-        playsound(tts_s_path)      # 음성으로 알림
+        playsound(tts_s_path)                           # 음성으로 알림
 
-        cursor = connection.cursor()
-        now=timezone.localtime()
+        # DB에 정보 삽입
+        cursor = connection.cursor()          # DB 연결 객체 생성
+        now = timezone.localtime()              # 현재 시간(서울 시간)
         formatted_data = now.strftime('%Y=%m-%d %H:%M:%S')
         cursor.execute('insert into drowsiness_data values(%s,%s,%s)',
                         (views.ID, formatted_data, views.USERNAME))
@@ -168,6 +175,7 @@ def blink_count():
         connection.commit()
         connection.close()
 
+# test 메소드
 def test():
     time.sleep(5)
     global frame, pred_l, pred_r, detector, model, model2, front_back, predictor, temp
@@ -219,13 +227,16 @@ def test():
             # 모델출력값은 pred_l, pred_r에 0.0~1.0 사이 값이 저장. 눈을 크게뜰수록 1에 가까워짐.
             pred_l = model.predict(eye_input_l)
             pred_r = model.predict(eye_input_r)
-            print('eye', pred_r)
+            print('pred_l :', pred_l)
+            print('pred_r :', pred_r)
 
             if division==1 or division==2:
                 get_sleep()  # 졸음 감지 알림 함수 호출
             if division==1 or division==3:
                 blink_count()  # 눈동자 깜빡임 횟수 부족 감지 함수 호출
 
+
+# Consumer 객체 (이름 변경 예정)
 class ChatConsumer(AsyncWebsocketConsumer):
     # connect to Websocket
     async def connect(self):
@@ -236,13 +247,13 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def disconnect(self, code):
         global thread_flag
-        thread_flag=True
+        thread_flag = True
         print('======================================')
 
     async def receive(self, text_data):
         global check
-        if check==False:
-            check=True
+        if check == False:
+            check = True
             t = threading.Thread(target=test, daemon=True)
             t.start()
 
