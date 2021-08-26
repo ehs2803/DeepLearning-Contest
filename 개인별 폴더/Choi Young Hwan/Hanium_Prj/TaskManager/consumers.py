@@ -96,8 +96,8 @@ def sleepDetection():
     else:  # 두 눈을 감지 않았을 때
         check_sleep = False  # 졸음 감지 변수를 False 로 변경
 
-
-def sleepDetection_frot_back():
+# 정수리 / 정면 여부를 통한 졸음 감지
+def sleepDetection_front_top():
     global front_back, check_sleep_fb, start_sleep_fb
     # 정수리로 판단되는 경우
     if front_back < 0.01:
@@ -145,7 +145,7 @@ def get_sleep():
         connection.close()
 
 def get_sleep_front_back():
-    if sleepDetection_frot_back():
+    if sleepDetection_front_top():
         tts_s_path = 'data/sleep_notification.mp3'      # 음성 알림 파일
         playsound(tts_s_path)                           # 음성으로 알림
 
@@ -175,8 +175,10 @@ def blink_count():
         connection.commit()
         connection.close()
 
-# test 메소드
-def test():
+# 영상처리 및 감지 함수 호출 메소드
+# division 변수가 1이거나 2이면 졸음 감지
+# 1이거나 3이면 눈 깜빡임 감지
+def processing_and_detection():
     time.sleep(5)
     global frame, pred_l, pred_r, detector, model, model2, front_back, predictor, temp
     while True:
@@ -188,6 +190,7 @@ def test():
         testimg = testimg.copy().reshape((1, 150, 150, 3)).astype(np.float32) / 255.
         front_back = model2.predict(testimg)
         print(front_back)
+        # 졸음 감지
         if division==1 or division==2:
             get_sleep_front_back()
 
@@ -237,7 +240,7 @@ def test():
 
 
 # Consumer 객체 (이름 변경 예정)
-class ChatConsumer(AsyncWebsocketConsumer):
+class Consumer(AsyncWebsocketConsumer):
     # connect to Websocket
     async def connect(self):
         global check, thread_flag
@@ -254,7 +257,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         global check
         if check == False:
             check = True
-            t = threading.Thread(target=test, daemon=True)
+            t = threading.Thread(target=processing_and_detection, daemon=True)
             t.start()
 
         global frame

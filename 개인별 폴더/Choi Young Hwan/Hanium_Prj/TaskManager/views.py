@@ -1,7 +1,3 @@
-from django.http.response import StreamingHttpResponse
-from TaskManager.sleep import Sleep_Detector
-from TaskManager.sleep import Blink_Detector
-from TaskManager.sleep import sleep_Blink_Detector
 from TaskManager.models import *
 
 from django.shortcuts import render, redirect, get_object_or_404

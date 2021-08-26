@@ -30,8 +30,8 @@
 			<nav id="menu">
 				<ul class="links">
 					<li><a href="{% url 'index' %}">Home</a></li>
-					<li><a href="freeboard">게시판</a></li>
-					<li><a href="questionboard">Q & A</a></li>
+					<li><a href="{% url 'freeboard' %}">게시판</a></li>
+					<li><a href="{% url 'questionboard' %}">Q & A</a></li>
 					<li><a href="{% url 'mypage' %}">마이페이지</a></li>
 				</ul>
 				<ul class="actions vertical">

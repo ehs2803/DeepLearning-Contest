@@ -1,15 +1,51 @@
-{% extends "base.html" %}
-{% block content %}
 {% load static %}
-<a style="display:none;">{{ post.increase_hits}}</a>
-<title>Q & A - {{post.title}}</title>
+<head>
+    <a style="display:none;">{{ post.increase_hits}}</a>
+    <title>Q & A - {{post.title}}</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="{% static 'vendor/bootstrap/css/bootstrap.min.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/mains.css' %}" />
+</head>
+
+<body>
+
+
+		<!-- Header -->
+			<header id="header">
+				<nav class="left">
+					<a href="#menu"><span>Menu</span></a>
+				</nav>
+				<a href="{% url 'index' %}" class="logo">Task Manager</a>
+				<nav class="right">
+
+
+					<a class="button alt" href="{% url 'logout' %}">Logout</a>
+
+				</nav>
+			</header>
+
+        <!-- Menu -->
+			<nav id="menu">
+				<ul class="links">
+					<li><a href="{% url 'index' %}">Home</a></li>
+					<li><a href="{% url 'freeboard' %}">게시판</a></li>
+					<li><a href="{% url 'questionboard' %}">Q & A</a></li>
+					<li><a href="{% url 'mypage' %}">마이페이지</a></li>
+				</ul>
+				<ul class="actions vertical">
+					<li><a href="#" class="button fit">Login</a></li>
+				</ul>
+			</nav>
+
+
+
 <div class="masthead ">
     <div class="container">
         <div class="row">
             <div class="col-md-10 col-xs-10 mx-auto">
                 <br>
-                <h1 class="panel-title text-center"><i class="far fa-edit"></i>&nbsp;&nbsp;Q & A</h1>
-                <br><br><br>
+                <h1 class="panel-title text-center">Q & A</h1>
                 <table class="table">
                     <thead style="white-space:nowrap;">
                         <tr>
@@ -28,7 +64,7 @@
                         </tr>
                         <tr>
                             <th scope="row" style="white-space:nowrap;">작성자</th>
-                            <td>{{post.name}}</td>
+                            <td>{{post.username}}</td>
                             <td></td>
                         </tr>
                         <tr>
@@ -39,7 +75,7 @@
                     </tbody>
                 </table>
                 <br><br>
-                <button type="button" class="btn btn-lg btn-outline-dark" onclick="location.href = '/questionboard'"><i class="fas fa-angle-left"></i>&nbsp;&nbsp;이전</button>
+                <button type="button" class="btn btn-lg btn-outline-dark" onclick="location.href = '/questionboard'">이전</button>
                 <div class="btn-group btn-group-lg" role="group" aria-label="delete" style="float:right;">
                     <button type="button" class="btn btn-outline-danger" data-toggle="modal" data-target="#exampleModalCenter_1">삭제</button>
                 </div>
@@ -115,4 +151,15 @@
         </div>
     </div>
 </div>
-{% endblock content %}
+
+    <!--base.html 에 있었던 것-->
+    <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+    <script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+    <!--index.html 에 있었던 것-->
+    <script src="{% static 'js/jquery.min.js' %}"></script>
+    <script src="{% static 'js/jquery.scrolly.min.js' %}"></script>
+    <script src="{% static 'js/skel.min.js' %}"></script>
+    <script src="{% static 'js/util.js' %}"></script>
+    <script src="{% static 'js/mains.js' %}"></script>
+
+</body>
