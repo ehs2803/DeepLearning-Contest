@@ -84,7 +84,7 @@
                 <span id="day"></span>
             </div>
         </div>
-        <div class="scheduler">
+        <span class="scheduler">
             <h1>TO DO LIST</h1>
             <p>공부할 주제를 기록해 보세요</p>
             <p>공부가 끝난 것은 클릭해서 삭제할 수 있습니다.</p>
@@ -99,6 +99,9 @@
                 </div>
             </form>
             <!-- 여기는 미완료 투두리스트! -->
+            <span>
+                미완료 일정
+            </span>
             <div class="toDoDiv">
                 <ul class="list-group">
                     {% for todo in todos %}
@@ -114,6 +117,9 @@
                     {% endfor %}
                 </ul>
             </div>
+            <span>
+                완료된 일정
+            </span>
             <!-- 여기는 완료된 투두리스트! -->
             <div class="toDoDiv2">
                 <ul class="list-group">

@@ -7,6 +7,8 @@ from django.core.paginator import Paginator
 from django.core.serializers.json import DjangoJSONEncoder
 
 from django.utils import timezone
+from datetime import datetime
+
 import json
 import TaskManager.consumers
 
@@ -101,7 +103,7 @@ def logout(request):
         del(request.session['username'])    # 사용자 아이디 제거
     return redirect('/')            # 메인 페이지(index.html) 리턴
 
-
+##########################################################################################
 # 메인 페이지
 def main(request):
     # 사용자 정보 로드
@@ -157,25 +159,25 @@ def MyPage(request):
     }
     return render(request, 'mypage.html', context=context)
 
-
+##########################################################################################
 # 통합 페이지
 def Task_Manager(request):
     global ID, USERNAME
-    ### 임시 코드 ###
     user = None
-    new_Todo = None
-    content = None
+    todos = None
     TaskManager.consumers.division = 1
 
     if request.session.get('id', None):
         user = AuthUser.objects.get(id=request.session.get('id', None))
-        todos = TodoList.objects.all()  # Todo 테이블의 모든 데이터를 가져와서
+        todos = TodoList.objects.all()      # TodoList 데이터 로드
+        comp_todos = CompleteList.objects.all()     # CompleteList 데이터 로드
         ID = user.id
         USERNAME = user.username
 
     context = {
         'user': user,
-        'todos': todos
+        'todos': todos,
+        'comp_todos': comp_todos
     }
     return render(request, "TaskManager.html", context=context)
 
@@ -189,36 +191,74 @@ def TaskManager_createTodo(request):
     #POST 요청시
     if request.method == 'POST':
      new_todo = TodoList.objects.create(
-        content=request.POST['todoContent'],
-        uid=user,
-        username=user.username                 # DB의 Todo테이블에 쓰고,
+         content=request.POST['todoContent'],
+         uid=user,
+         username=user.username,
+         reg_date=request.POST['reg_date'],
+         reg_time=request.POST['reg_time'],
      ).save()                                  # 저장!
 
     return redirect('TaskManager')                        # 처리 후 TaskManger 돌아가기
 
-# TodoList 삭제
+# CompleteList 삭제
 def TaskManager_deleteTodo(request):
     delete_todo = request.GET['delete_id']
-    todo = TodoList.objects.get(id=delete_todo)
+    todo = CompleteList.objects.get(id=delete_todo)
     todo.delete()
     return redirect('TaskManager')
 
+# TodoList 삭제 ,CompleteList 추가 => 완료 일정 저장
+def TaskManager_completeTodo(request):
+    # 사용자정보 로드
+    user = None
+    complete_id = None
+    todo = None
+    if request.session.get('id', None):
+        user = AuthUser.objects.get(id=request.session.get('id', None))
+
+    # 완료된 일정 id 값 로드
+    complete_id = request.GET['complete_id']
+    todo = TodoList.objects.get(id=complete_id)         # 완료된 일정
+
+    # 완료 시간 처리
+    end = datetime.now()
+    end_date = end.strftime('%Y-%m-%d')
+    end_time = end.strftime('%H:%M:%S')
+
+    # 완료 일정 완료 테이블에 추가
+    new_todo = CompleteList.objects.create(        # DB의 CompleteTodo테이블에 쓰고,
+        content=todo.content,
+        uid=user,
+        username=user.username,
+        end_date=end_date,
+        end_time=end_time,
+    ).save()  # 저장!
+
+    # 완료된 일정 삭제
+    todo.delete()
+    return redirect('TaskManager')
+
+
+##########################################################################################
 # 졸음 감지 페이지
 def Drowsiness(request):
     global ID, USERNAME
+    TaskManager.consumers.division = 2
     # 사용자 정보 로드
     user = None
     todos = None
-    TaskManager.consumers.division=2
+    comp_todos = None
     if request.session.get('id', None):
         user = AuthUser.objects.get(id=request.session.get('id', None))
-        todos = TodoList.objects.all()  # Todo 테이블의 모든 데이터를 가져와서
+        todos = TodoList.objects.all()      # TodoList 데이터 로드
+        comp_todos = CompleteList.objects.all()     # CompleteList 데이터 로드
         ID = user.id
         USERNAME = user.username
 
     context = {
         'user': user,
-        'todos': todos
+        'todos': todos,
+        'comp_todos': comp_todos
     }
     return render(request, "Drowsiness.html", context=context)
 
@@ -231,10 +271,12 @@ def Drowsiness_createTodo(request):
 
     #POST 요청시
     if request.method == 'POST':
-     new_todo = TodoList.objects.create(
-        content=request.POST['todoContent'],
-        uid=user,
-        username=user.username                 # DB의 Todo테이블에 쓰고,
+        new_todo = TodoList.objects.create(
+            content=request.POST['todoContent'],
+            uid=user,
+            username=user.username,
+            reg_date=request.POST['reg_date'],
+            reg_time=request.POST['reg_time'],
      ).save()                                  # 저장!
 
     return redirect('Drowsiness')                        # 처리 후 TaskManger 돌아가기
@@ -242,29 +284,62 @@ def Drowsiness_createTodo(request):
 # TodoList 삭제
 def Drowsiness_deleteTodo(request):
     delete_todo = request.GET['delete_id']
-    todo = TodoList.objects.get(id=delete_todo)
+    todo = CompleteList.objects.get(id=delete_todo)
+    todo.delete()
+    return redirect('Drowsiness')
+
+# TodoList 삭제 ,CompleteList 추가 => 완료 일정 저장
+def Drowsiness_completeTodo(request):
+    # 사용자정보 로드
+    user = None
+    complete_id = None
+    todo = None
+    if request.session.get('id', None):
+        user = AuthUser.objects.get(id=request.session.get('id', None))
+
+    # 완료된 일정 id 값 로드
+    complete_id = request.GET['complete_id']
+    todo = TodoList.objects.get(id=complete_id)         # 완료된 일정
+
+    # 완료 시간 처리
+    end = datetime.now()
+    end_date = end.strftime('%Y-%m-%d')
+    end_time = end.strftime('%H:%M:%S')
+
+    # 완료 일정 완료 테이블에 추가
+    new_todo = CompleteList.objects.create(        # DB의 CompleteTodo테이블에 쓰고,
+        content=todo.content,
+        uid=user,
+        username=user.username,
+        end_date=end_date,
+        end_time=end_time,
+    ).save()  # 저장!
+
+    # 완료된 일정 삭제
     todo.delete()
     return redirect('Drowsiness')
 
 
+##########################################################################################
 # 눈 깜빡임 감지 페이지
 def Blinking(request):
     global ID, USERNAME
+    TaskManager.consumers.division = 3
     # 사용자 정보 로드
     user = None
     todos = None
-    TaskManager.consumers.division = 3
-
-
+    comp_todos = None
     if request.session.get('id', None):
         user = AuthUser.objects.get(id=request.session.get('id', None))
-        todos = TodoList.objects.all()  # Todo 테이블의 모든 데이터를 가져와서
+        todos = TodoList.objects.all()      # TodoList 데이터 로드
+        comp_todos = CompleteList.objects.all()     # CompleteList 데이터 로드
         ID = user.id
         USERNAME = user.username
 
     context = {
         'user': user,
-        'todos': todos
+        'todos': todos,
+        'comp_todos': comp_todos
     }
     return render(request, "Blinking.html", context=context)
 
@@ -278,9 +353,11 @@ def Blinking_createTodo(request):
     #POST 요청시
     if request.method == 'POST':
      new_todo = TodoList.objects.create(
-        content=request.POST['todoContent'],
-        uid=user,
-        username=user.username                 # DB의 Todo테이블에 쓰고,
+         content=request.POST['todoContent'],
+         uid=user,
+         username=user.username,
+         reg_date=request.POST['reg_date'],
+         reg_time=request.POST['reg_time'],
      ).save()                                  # 저장!
 
     return redirect('Blinking')                        # 처리 후 TaskManger 돌아가기
@@ -288,7 +365,38 @@ def Blinking_createTodo(request):
 # TodoList 삭제
 def Blinking_deleteTodo(request):
     delete_todo = request.GET['delete_id']
-    todo = TodoList.objects.get(id=delete_todo)
+    todo = CompleteList.objects.get(id=delete_todo)
+    todo.delete()
+    return redirect('Blinking')
+
+# TodoList 삭제 ,CompleteList 추가 => 완료 일정 저장
+def Blinking_completeTodo(request):
+    # 사용자정보 로드
+    user = None
+    complete_id = None
+    todo = None
+    if request.session.get('id', None):
+        user = AuthUser.objects.get(id=request.session.get('id', None))
+
+    # 완료된 일정 id 값 로드
+    complete_id = request.GET['complete_id']
+    todo = TodoList.objects.get(id=complete_id)         # 완료된 일정
+
+    # 완료 시간 처리
+    end = datetime.now()
+    end_date = end.strftime('%Y-%m-%d')
+    end_time = end.strftime('%H:%M:%S')
+
+    # 완료 일정 완료 테이블에 추가
+    new_todo = CompleteList.objects.create(        # DB의 CompleteTodo테이블에 쓰고,
+        content=todo.content,
+        uid=user,
+        username=user.username,
+        end_date=end_date,
+        end_time=end_time,
+    ).save()  # 저장!
+
+    # 완료된 일정 삭제
     todo.delete()
     return redirect('Blinking')
 
