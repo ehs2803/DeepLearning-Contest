@@ -159,6 +159,71 @@ def MyPage(request):
     }
     return render(request, 'mypage.html', context=context)
 
+def RankingPage(request):
+    user = None
+    u_data_js=None
+    if request.session.get('id', None):
+        user = AuthUser.objects.get(id=request.session.get('id', None))
+        userdict={}
+        userdict[user.username]=user.username
+        u_data = list(userdict)
+        u_data_js=json.dumps(u_data, cls=DjangoJSONEncoder)
+
+        # to-do list
+        t_data = list(TodoList.objects.values())
+
+        # complete list
+        c_data = list(CompleteList.objects.values())
+
+
+        dictObject_t={}     # todo list
+        dictObject_c={}     # complete list
+
+        # 사용자별 todo list 개수 설정
+        for i in range(len(t_data)):
+            # 있으면 +1
+            if t_data[i]['username'] in dictObject_t:
+                dictObject_t[t_data[i]['username']]+=1
+            # 없으면 1로 초기화
+            else:
+                dictObject_t[t_data[i]['username']]=1
+
+        # ???
+        for key in dictObject_t.keys():
+            dictObject_c[key]=0
+
+        # 사용자별 complete list 개수 설정
+        for i in range(len(c_data)):
+            if c_data[i]['username'] in dictObject_t:
+                dictObject_c[c_data[i]['username']]+=1
+            else:
+                dictObject_c[c_data[i]['username']]=1
+
+        # html 로 보낼 결과 dictionary
+        dictObject_result={}
+
+        # 전체 todo list 개수와 complete list 개수 저장
+        for key in dictObject_t:
+            total = dictObject_t[key]
+            complete = dictObject_c[key]
+
+            # 완료 비율 계산
+            perecent = (complete/total)*100
+            # 완료 비율 저장
+            dictObject_result[key]=perecent
+
+        # 순위 dictonary 저장 및 json data로 변환
+        sorted_dict = sorted(dictObject_result.items(), key=lambda item: item[1], reverse=True)
+        result_data = list(sorted_dict)
+        result_data_js = json.dumps(result_data, cls=DjangoJSONEncoder)
+
+    context = {
+        'user': user,
+        'u_data_js' : u_data_js,
+        'result_data_js':result_data_js
+    }
+    return render(request, 'Ranking.html', context=context)
+
 ##########################################################################################
 # 통합 페이지
 def Task_Manager(request):
@@ -169,15 +234,21 @@ def Task_Manager(request):
 
     if request.session.get('id', None):
         user = AuthUser.objects.get(id=request.session.get('id', None))
-        todos = TodoList.objects.all()      # TodoList 데이터 로드
-        comp_todos = CompleteList.objects.all()     # CompleteList 데이터 로드
         ID = user.id
         USERNAME = user.username
+        todos = TodoList.objects.filter(uid=user.id)              # TodoList 데이터 로드
+        comp_todos = CompleteList.objects.filter(uid=user.id)     # CompleteList 데이터 로드
+
+        # 완료, 미완료 분리를 위한 리스트
+        comp_id_list = []
+        for comp in comp_todos:
+            comp_id_list.append(comp.tid)
 
     context = {
         'user': user,
         'todos': todos,
-        'comp_todos': comp_todos
+        'comp_todos': comp_todos,
+        'comp_list': comp_id_list
     }
     return render(request, "TaskManager.html", context=context)
 
@@ -200,14 +271,17 @@ def TaskManager_createTodo(request):
 
     return redirect('TaskManager')                        # 처리 후 TaskManger 돌아가기
 
-# CompleteList 삭제
+# TodoList 와 CompleteList 같이 삭제
 def TaskManager_deleteTodo(request):
-    delete_todo = request.GET['delete_id']
-    todo = CompleteList.objects.get(id=delete_todo)
-    todo.delete()
+    comp_id = request.GET['delete_id']
+    comp_todo = CompleteList.objects.get(id=comp_id)
+    comp_todo.delete()
+
+    del_todo = TodoList.objects.get(id=comp_todo.tid)
+    del_todo.delete()
     return redirect('TaskManager')
 
-# TodoList 삭제 ,CompleteList 추가 => 완료 일정 저장
+# CompleteList 추가 => 완료 일정 저장
 def TaskManager_completeTodo(request):
     # 사용자정보 로드
     user = None
@@ -232,10 +306,9 @@ def TaskManager_completeTodo(request):
         username=user.username,
         end_date=end_date,
         end_time=end_time,
+        tid=todo.id,
     ).save()  # 저장!
 
-    # 완료된 일정 삭제
-    todo.delete()
     return redirect('TaskManager')
 
 
@@ -250,8 +323,8 @@ def Drowsiness(request):
     comp_todos = None
     if request.session.get('id', None):
         user = AuthUser.objects.get(id=request.session.get('id', None))
-        todos = TodoList.objects.all()      # TodoList 데이터 로드
-        comp_todos = CompleteList.objects.all()     # CompleteList 데이터 로드
+        todos = TodoList.objects.filter(uid=user.id)              # TodoList 데이터 로드
+        comp_todos = CompleteList.objects.filter(uid=user.id)     # CompleteList 데이터 로드
         ID = user.id
         USERNAME = user.username
 
@@ -281,14 +354,17 @@ def Drowsiness_createTodo(request):
 
     return redirect('Drowsiness')                        # 처리 후 TaskManger 돌아가기
 
-# TodoList 삭제
+# TodoList 와 CompleteList 같이 삭제
 def Drowsiness_deleteTodo(request):
-    delete_todo = request.GET['delete_id']
-    todo = CompleteList.objects.get(id=delete_todo)
-    todo.delete()
+    comp_id = request.GET['delete_id']
+    comp_todo = CompleteList.objects.get(id=comp_id)
+    comp_todo.delete()
+
+    del_todo = TodoList.objects.get(id=comp_todo.tid)
+    del_todo.delete()
     return redirect('Drowsiness')
 
-# TodoList 삭제 ,CompleteList 추가 => 완료 일정 저장
+# CompleteList 추가 => 완료 일정 저장
 def Drowsiness_completeTodo(request):
     # 사용자정보 로드
     user = None
@@ -313,10 +389,9 @@ def Drowsiness_completeTodo(request):
         username=user.username,
         end_date=end_date,
         end_time=end_time,
+        tid=todo.id,
     ).save()  # 저장!
 
-    # 완료된 일정 삭제
-    todo.delete()
     return redirect('Drowsiness')
 
 
@@ -331,8 +406,8 @@ def Blinking(request):
     comp_todos = None
     if request.session.get('id', None):
         user = AuthUser.objects.get(id=request.session.get('id', None))
-        todos = TodoList.objects.all()      # TodoList 데이터 로드
-        comp_todos = CompleteList.objects.all()     # CompleteList 데이터 로드
+        todos = TodoList.objects.filter(uid=user.id)              # TodoList 데이터 로드
+        comp_todos = CompleteList.objects.filter(uid=user.id)     # CompleteList 데이터 로드
         ID = user.id
         USERNAME = user.username
 
@@ -362,14 +437,17 @@ def Blinking_createTodo(request):
 
     return redirect('Blinking')                        # 처리 후 TaskManger 돌아가기
 
-# TodoList 삭제
+# TodoList 와 CompleteList 같이 삭제
 def Blinking_deleteTodo(request):
-    delete_todo = request.GET['delete_id']
-    todo = CompleteList.objects.get(id=delete_todo)
-    todo.delete()
+    comp_id = request.GET['delete_id']
+    comp_todo = CompleteList.objects.get(id=comp_id)
+    comp_todo.delete()
+
+    del_todo = TodoList.objects.get(id=comp_todo.tid)
+    del_todo.delete()
     return redirect('Blinking')
 
-# TodoList 삭제 ,CompleteList 추가 => 완료 일정 저장
+# CompleteList 추가 => 완료 일정 저장
 def Blinking_completeTodo(request):
     # 사용자정보 로드
     user = None
@@ -394,12 +472,10 @@ def Blinking_completeTodo(request):
         username=user.username,
         end_date=end_date,
         end_time=end_time,
+        tid=todo.id,
     ).save()  # 저장!
 
-    # 완료된 일정 삭제
-    todo.delete()
     return redirect('Blinking')
-
 
 ###############################################################################################
 # 게시판 선택 페이지

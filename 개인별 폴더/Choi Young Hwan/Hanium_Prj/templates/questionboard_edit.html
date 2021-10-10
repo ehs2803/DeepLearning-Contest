@@ -22,23 +22,24 @@
 				</nav>
 				{% else %}
 				<nav class="right">
-					<a class="button alt" href="login" >Log in</a>
+					<a class="button alt" href="{% url 'login' %}" >Log in</a>
 				</nav>
 				{% endif %}
 			</header>
 
         <!-- Menu -->
-			<nav id="menu">
-				<ul class="links">
-					<li><a href="{% url 'index' %}">Home</a></li>
-					<li><a href="{% url 'freeboard' %}">게시판</a></li>
-					<li><a href="{% url 'questionboard' %}">Q & A</a></li>
-					<li><a href="{% url 'mypage' %}">마이페이지</a></li>
-				</ul>
-				<ul class="actions vertical">
-					<li><a href="#" class="button fit">Login</a></li>
-				</ul>
-			</nav>
+            <nav id="menu">
+               <ul class="links">
+                  <li><a href="{% url 'index' %}">Home</a></li>
+                  <li><a href="{% url 'freeboard' %}">게시판</a></li>
+                  <li><a href="{% url 'questionboard' %}">Q & A</a></li>
+                  <li><a href="{% url 'mypage' %}">마이페이지</a></li>
+                  <li><a href="{% url 'ranking' %}">랭킹게시판</a></li>
+               </ul>
+               <ul class="actions vertical">
+                  <li><a href="#" class="button fit">Login</a></li>
+               </ul>
+            </nav>
 
 <div class="masthead ">
     <div class="container">

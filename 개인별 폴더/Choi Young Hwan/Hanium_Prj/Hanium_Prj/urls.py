@@ -30,6 +30,7 @@ urlpatterns = [
     path("main/", views.main, name="main"),                                 # main화면 url 연결
     path("about/", views.about, name="about"),                              # About화면 url 연결
     path("mypage/", views.MyPage, name="mypage"),                           # 마이페이지 url 연결
+    path("ranking/", views.RankingPage, name="ranking"),
 
     # 통합기능 페이지 url 연결
     path("TaskManager/", views.Task_Manager, name="TaskManager"),

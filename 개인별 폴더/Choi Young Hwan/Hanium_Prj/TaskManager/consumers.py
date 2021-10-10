@@ -16,6 +16,8 @@ from django.utils import timezone
 
 from TaskManager import views
 
+import json
+
 IMG_SIZE = (34, 26)                                                                 # 눈동자 이미지 사이즈 변수
 detector = dlib.get_frontal_face_detector()                                         # 정면 얼굴 감지기 로드
 model = load_model(os.path.join(settings.BASE_DIR, 'data/detection_model.h5'))  # 눈동자 깜빡임 감지 모델 로드
@@ -46,7 +48,11 @@ front_back = 0.0                           # 정면 / 정수리 예측 값
 check_sleep_fb = False                     # 정면 / 정수리 여부
 start_sleep_fb = 0                         # 졸음감지 시간 측정 변수
 
-
+# 얼굴탐지X   0
+# 얼굴탐지    1
+# 졸음감지    2
+# 눈깜빡임감지 3
+message="0"
 
 # 매개변수 img 프레임에서 눈을 찾아 눈부분의 image와 좌표를 반환하는 함수
 def crop_eye(img, eye_points):
@@ -124,7 +130,8 @@ def eyeBlinkDetection():
     if pred_r < 0.1 and pred_l < 0.1:                                 # 양쪽 눈동자가 감겼을때
         check_blink = True                                                 # 눈동자 감김여부 변수를 True로 변경
     if time.time() - start_blink > 60:                                     # 측정시간이 1분(60초)가 지났을 경우
-        if eye_count_min < 15:                                             # 눈동자 깜빡임 횟수가 15번 미만일 경우
+        if eye_count_min < 15:# 눈동자 깜빡임 횟수가 15번 미만일 경우
+            start_blink=0
             return True                                                         # True 반환
         else:                                                                   # 눈동자 깜빡임 횟수가 15번 이상일 경우
             start_blink = time.time()                                      # 눈동자 깜빡임 시간 측정 시작
@@ -132,7 +139,9 @@ def eyeBlinkDetection():
 
 # 졸음감지 알림 함수
 def get_sleep():
+    global message
     if sleepDetection():                           # 졸음감지를 하면
+        message="2"
         tts_s_path = 'data/sleep_notification.mp3'      # 음성 알림 파일
         playsound(tts_s_path)      # 음성으로 알림
         # DB에 정보 삽입
@@ -143,9 +152,12 @@ def get_sleep():
                         (views.ID, formatted_data, views.USERNAME))
         connection.commit()
         connection.close()
+        message="0"
 
 def get_sleep_front_back():
+    global message
     if sleepDetection_front_top():
+        message="2"
         tts_s_path = 'data/sleep_notification.mp3'      # 음성 알림 파일
         playsound(tts_s_path)                           # 음성으로 알림
 
@@ -157,14 +169,17 @@ def get_sleep_front_back():
                         (views.ID, formatted_data, views.USERNAME))
         connection.commit()
         connection.close()
+        message="0"
 
 # 눈동자 깜빡임 횟수 부족 알림 함수
 def blink_count():
-    global eye_count_min, start_blink
+    global eye_count_min, start_blink, message
     if eyeBlinkDetection():  # 눈동자 깜빡임의 횟수가 적으면
+        message="3"
+        start_blink = time.time()  # 눈동자 깜빡임 시간 측정 시작
         tts_b_path = 'data/blink_count' + str(eye_count_min) + '.mp3'  # 알림 음성 파일
         playsound(tts_b_path)  # 음성으로 알림
-        start_blink = time.time()  # 눈동자 깜빡임 시간 측정 시작
+        #start_blink = time.time()  # 눈동자 깜빡임 시간 측정 시작
         eye_count_min = 0  # 눈동자 깜빡임 횟수 저장 변수 0으로 초기화
         # DB에 정보 삽입
         cursor = connection.cursor()
@@ -174,13 +189,16 @@ def blink_count():
                         (views.ID, formatted_data, views.USERNAME))
         connection.commit()
         connection.close()
+        message="0"
 
 # 영상처리 및 감지 함수 호출 메소드
 # division 변수가 1이거나 2이면 졸음 감지
 # 1이거나 3이면 눈 깜빡임 감지
 def processing_and_detection():
+    global frame, pred_l, pred_r, detector, model, model2, front_back, predictor, temp, start_blink, message
+    start_blink = time.time()
     time.sleep(5)
-    global frame, pred_l, pred_r, detector, model, model2, front_back, predictor, temp
+
     while True:
         if thread_flag==True:
             break
@@ -189,7 +207,7 @@ def processing_and_detection():
         testimg = cv2.resize(tempimg, (150, 150))
         testimg = testimg.copy().reshape((1, 150, 150, 3)).astype(np.float32) / 255.
         front_back = model2.predict(testimg)
-        print(front_back)
+        #print(front_back)
         # 졸음 감지
         if division==1 or division==2:
             get_sleep_front_back()
@@ -203,7 +221,9 @@ def processing_and_detection():
 
         # detector로 찾아낸 얼굴개수는 여러개일 수 있어 for 반복문을 통해 인식된 얼굴 개수만큼 반복
         # 만약 웹캠에 사람2명 있다면 print(len(faces))의 출력값은 2
+        message="0"
         for face in faces:
+            message="1"
             # predictor를 통해 68개의 좌표를 찍음. 위치만 찍는거니까 x좌표, y좌표로 이루어져 이런 [x좌표, y좌표]의 값, 68개가 shapes에 할당
             shapes = predictor(gray, face)
             # 얼굴 랜드마크(x, y) 좌표를 NumPy로 변환
@@ -238,6 +258,9 @@ def processing_and_detection():
             if division==1 or division==3:
                 blink_count()  # 눈동자 깜빡임 횟수 부족 감지 함수 호출
 
+        if division == 1 or division == 3:
+            blink_count()  # 눈동자 깜빡임 횟수 부족 감지 함수 호출
+
 
 # Consumer 객체 (이름 변경 예정)
 class Consumer(AsyncWebsocketConsumer):
@@ -249,12 +272,15 @@ class Consumer(AsyncWebsocketConsumer):
         await self.accept()
 
     async def disconnect(self, code):
-        global thread_flag
+        global thread_flag, message, start_blink, eye_count_min
         thread_flag = True
+        message="0"
+        #start_blink=0
+        eye_count_min=0
         print('======================================')
 
     async def receive(self, text_data):
-        global check
+        global check, start_blink, eye_count_min
         if check == False:
             check = True
             t = threading.Thread(target=processing_and_detection, daemon=True)
@@ -270,4 +296,12 @@ class Consumer(AsyncWebsocketConsumer):
             img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
             img = cv2.resize(img, dsize=(650, 550), fx=0.5, fy=0.5)  # 프레임을 높이, 너비를 각각 절반으로 줄임.
             frame = img
-            #print(type(img))
+            await self.send(text_data=json.dumps({
+                'message': message,
+                'time':time.time() - start_blink,
+                'blink_cnt_min':eye_count_min
+            }))
+
+
+
+

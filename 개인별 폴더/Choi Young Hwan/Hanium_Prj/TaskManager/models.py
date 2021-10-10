@@ -136,6 +136,7 @@ class CompleteList(models.Model):
     content = models.TextField(blank=True, null=True)
     end_date = models.TextField(db_column='END_DATE', null=False)  # Field name made lowercase.
     end_time = models.TextField(db_column='END_TIME', null=False)  # Field name made lowercase.
+    tid = models.IntegerField(db_column='tid', null=True)
 
     class Meta:
         managed = False
