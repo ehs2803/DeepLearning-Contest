@@ -46,8 +46,8 @@
         </nav>
         <a href="{% url 'index' %}" class="logo">Task Manager</a>
         {% if user %}
+                    <!--
         <nav class="right">
-            <!--
                     <a class="button alt">{{user.username}}님</a>
                     <a class="button alt" href="{% url 'logout' %}">Logout</a>
                 </nav>
@@ -173,8 +173,6 @@
                     </form>
                     {% endfor %}
                 </ul>
-            </div>
-            <div>
             </div>
         </div>
         <div class="how">
