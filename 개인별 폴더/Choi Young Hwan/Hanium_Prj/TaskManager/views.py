@@ -213,7 +213,15 @@ def RankingPage(request):
             dictObject_result[key]=perecent
 
         # 순위 dictonary 저장 및 json data로 변환
-        sorted_dict = sorted(dictObject_result.items(), key=lambda item: item[1], reverse=True)
+        # sorted_dict = sorted(dictObject_result.items(), key=lambda item: item[1], reverse=True)
+        
+        # 시연영상을 위한 임시 sorted_dict
+        sorted_dict=[('dudghks97', 100.0), ('user02', 99.0), ('user03', 95.0),('user04', 91.0),('user05', 90.0),
+                     ('user06', 87.0), ('user07', 82.0), ('user08', 80.0),('user09', 78.0),('user10', 77.0),
+                     ('user11', 72.0), ('user12', 69.0), ('user13', 65.0),('user14', 64.0),('user15', 62.0),
+                     ('user16', 60.0), ('user17', 57.0), ('user18', 55.0),('user19', 51.0),('user20', 50.0),
+                     ('user21', 47.0), ('user22', 42.0), ('user23', 40.0),('user24', 38.0),('user25', 35.0),
+                     ('user26', 30.0), ('user27', 27.0), ('user28', 20.0),('user29', 10.0),('user30', 0.0)]
         result_data = list(sorted_dict)
         result_data_js = json.dumps(result_data, cls=DjangoJSONEncoder)
 

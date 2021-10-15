@@ -358,7 +358,7 @@
                     var i = 0;
                     if (tempdate in dictObject_d) { // 선택날짜가 딕셔너리에 있다면
                         for (var key in dictObject_d_h) { // 시간당 딕셔너리에 있는 모든 키를 조회
-                            labels_temp.push(key);
+                            labels_temp.push(key + '시');
                             data_temp.push(dictObject_d_h[key]);
                             background_temp.push(backgroundColors[i]);
                             i += 1;
@@ -564,7 +564,7 @@
                         }]
                     };
 
-                    title_str = labels1[0] + ' ~ ' + labels1[6] + '기간의 졸음감지 데이터' // title 설정
+                    title_str = labels1[0] + ' ~ ' + labels1[6] + '기간의 눈 깜빡임 부족 감지 데이터' // title 설정
                     const config3 = {
                         type: 'line', // line 형태의 그래프
                         data6, // 데이터
@@ -646,7 +646,7 @@
                                 data: data_d, // x축 날짜에 대응하는 졸음감지 수 데이터
                             }]
                         };
-                        title_str = labels1[0] + ' ~ ' + labels1[6] + '기간의 졸음감지 데이터' // title 설정
+                        title_str = labels1[0] + ' ~ ' + labels1[6] + '기간의 눈 깜빡임 부족 감지 데이터' // title 설정
                         const config2 = {
                             type: 'line', // line 형태의 그래프
                             data, // 데이터
@@ -719,7 +719,7 @@
                     var i = 0;
                     if (tempdate in dictObject_b) { // 선택날짜가 딕셔너리에 있다면
                         for (var key in dictObject_b_h) { // 시간당 딕셔너리에 있는 모든 키를 조회
-                            labels_temp.push(key);
+                            labels_temp.push(key + '시');
                             data_temp.push(dictObject_b_h[key]);
                             background_temp.push(backgroundColors[i]);
                             i += 1;
@@ -741,7 +741,7 @@
                             hoverOffset: 4
                         }]
                     };
-                    title_str = tempdate + ' 시간대별 졸음감지 데이터' // title 설정
+                    title_str = tempdate + ' 시간대별 눈 깜빡임 부족 감지 데이터' // title 설정
                     const config4 = {
                         type: 'doughnut', // 도넛 유형의 그래프
                         data: data4, // 데이터
@@ -817,7 +817,7 @@
                                 hoverOffset: 4
                             }]
                         };
-                        title_str = tempdate + ' 시간대별 졸음감지 데이터'
+                        title_str = tempdate + ' 시간대별 눈 깜빡임 부족 감지 데이터'
                         const config4 = {
                             type: 'doughnut', // 도넛 유형의 그래프
                             data: data4,

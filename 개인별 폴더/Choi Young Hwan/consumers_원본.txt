@@ -17,8 +17,6 @@ from django.utils import timezone
 from TaskManager import views
 
 import json
-import threading
-import keyboard
 
 IMG_SIZE = (34, 26)                                                                 # 눈동자 이미지 사이즈 변수
 detector = dlib.get_frontal_face_detector()                                         # 정면 얼굴 감지기 로드
@@ -211,8 +209,8 @@ def processing_and_detection():
         front_back = model2.predict(testimg)
         #print(front_back)
         # 졸음 감지
-        #if division==1 or division==2:
-        #    get_sleep_front_back()
+        if division==1 or division==2:
+            get_sleep_front_back()
 
         # cv2.cvtcolor(원본 이미지, 색상 변환 코드)를 이용하여 이미지의 색상 공간을 변경
         # 변환코드(code) cv2.COLOR_BGR2GRAY는 출력영상이 GRAY로 변환
@@ -223,9 +221,9 @@ def processing_and_detection():
 
         # detector로 찾아낸 얼굴개수는 여러개일 수 있어 for 반복문을 통해 인식된 얼굴 개수만큼 반복
         # 만약 웹캠에 사람2명 있다면 print(len(faces))의 출력값은 2
-        #message="0"
+        message="0"
         for face in faces:
-            #message="1"
+            message="1"
             # predictor를 통해 68개의 좌표를 찍음. 위치만 찍는거니까 x좌표, y좌표로 이루어져 이런 [x좌표, y좌표]의 값, 68개가 shapes에 할당
             shapes = predictor(gray, face)
             # 얼굴 랜드마크(x, y) 좌표를 NumPy로 변환
@@ -255,44 +253,14 @@ def processing_and_detection():
             print('pred_l :', pred_l)
             print('pred_r :', pred_r)
 
-            #if division==1 or division==2:
-                #get_sleep()  # 졸음 감지 알림 함수 호출
-            #if division==1 or division==3:
-                #blink_count()  # 눈동자 깜빡임 횟수 부족 감지 함수 호출
+            if division==1 or division==2:
+                get_sleep()  # 졸음 감지 알림 함수 호출
+            if division==1 or division==3:
+                blink_count()  # 눈동자 깜빡임 횟수 부족 감지 함수 호출
 
         if division == 1 or division == 3:
             blink_count()  # 눈동자 깜빡임 횟수 부족 감지 함수 호출
 
-def sum():
-    global message, eye_count_min
-    while(True):
-        if keyboard.read_key() == "q":
-            print("You pressed q")
-            message="0"
-        elif keyboard.read_key() == "w":
-            print("You pressed w")
-            message="1"
-        elif keyboard.read_key() == "e":
-            message = "2"
-            tts_s_path = 'data/sleep_notification.mp3'  # 음성 알림 파일
-            playsound(tts_s_path)  # 음성으로 알림
-
-            # DB에 정보 삽입
-            cursor = connection.cursor()  # DB 연결 객체 생성
-            now = timezone.localtime()  # 현재 시간(서울 시간)
-            formatted_data = now.strftime('%Y=%m-%d %H:%M:%S')
-            cursor.execute('insert into drowsiness_data values(%s,%s,%s)',
-                           (views.ID, formatted_data, views.USERNAME))
-            connection.commit()
-            connection.close()
-            message = "1"
-        elif keyboard.read_key() == "r":
-            print("You pressed r")
-            message="3"
-        elif keyboard.read_key() == "t":
-            print("You pressed t")
-            eye_count_min+=1
-            time.sleep(0.5)
 
 # Consumer 객체 (이름 변경 예정)
 class Consumer(AsyncWebsocketConsumer):
@@ -301,8 +269,6 @@ class Consumer(AsyncWebsocketConsumer):
         global check, thread_flag
         check = False
         thread_flag = False
-        t = threading.Thread(target=sum)
-        t.start()
         await self.accept()
 
     async def disconnect(self, code):

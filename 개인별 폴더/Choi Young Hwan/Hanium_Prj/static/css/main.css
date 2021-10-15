@@ -34,10 +34,19 @@
 
     .tip {
         position: absolute;
-        width: 700px;
+        width: 800px;
         height: 170px;
         top: 700px;
         left: 600px;
+    }
+
+    .tip .button {
+        width: 200px;
+        height: 30px;
+        margin-left: -50px;
+        background: #222;
+        color: #fff;
+        border: none;
     }
 
     .how {
