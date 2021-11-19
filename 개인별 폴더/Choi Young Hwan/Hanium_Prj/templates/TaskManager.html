@@ -204,13 +204,13 @@
         return data;
     }
     WS_URL = 'ws://localhost:8000/ws/TaskManager'
-    const FPS = 4;
+    const FPS = 3;
     const ws = new WebSocket(WS_URL)
     ws.onopen = () => {
         console.log(`Connected to ${WS_URL}`);
         setInterval(() => {
             ws.send(getFrame());
-        }, 500);
+        }, 1000);
     }
     ws.onmessage = function(message){
         var data = JSON.parse(message.data);
